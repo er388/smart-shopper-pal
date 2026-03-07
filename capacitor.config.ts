@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.2f193804f6e042d5913231b050ff764f',
+  appId: 'app.lovable.smartcart',
   appName: 'SmartCart',
   webDir: 'dist',
   server: {
