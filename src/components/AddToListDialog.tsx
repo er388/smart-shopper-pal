@@ -67,7 +67,7 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
             </button>
           ))}
         </div>
-        <ScrollArea className="flex-1 -mx-2 px-2">
+        <ScrollArea className="flex-1 px-6 pb-6">
           <div className="space-y-1.5 py-1">
             <AnimatePresence>
               {filtered.map(p => {
