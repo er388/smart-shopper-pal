@@ -160,6 +160,16 @@ const translations = {
     version: 'Version 1.0',
     added: 'Added',
     removed: 'Removed',
+    unit: 'Unit',
+    note: 'Note',
+    notePlaceholder: 'e.g. ripe, check expiry...',
+    favorites: 'Favorites',
+    favoriteAdded: 'Added to favorites',
+    favoriteRemoved: 'Removed from favorites',
+    frequentBuyPrompt: 'You buy this often, want to make it a favorite?',
+    yes: 'Yes',
+    no: 'No',
+    skip: 'Skip',
   },
 } as const;
 
