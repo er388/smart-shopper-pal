@@ -20,6 +20,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <UndoSnackbar />
         <BrowserRouter>
           <Layout>
             <Routes>
