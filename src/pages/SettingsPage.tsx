@@ -97,6 +97,9 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* Loyalty Cards */}
+      <LoyaltyCardManager />
+
       {/* Categories */}
       <CategoryManager />
 

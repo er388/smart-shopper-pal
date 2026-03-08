@@ -630,6 +630,9 @@ export default function ShoppingListPage() {
       </div>
 
       <div className="px-4 pb-24">
+        {/* Loyalty Card Quick Button */}
+        <LoyaltyCardQuickButton storeId={activeStoreId} />
+
         {/* Quick Add Section */}
         {frequentProducts.length > 0 && (
           <Collapsible open={quickAddOpen} onOpenChange={setQuickAddOpen} className="mb-4">
