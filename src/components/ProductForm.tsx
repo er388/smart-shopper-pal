@@ -16,6 +16,7 @@ interface Props {
   onClose: () => void;
   onSave: (data: { name: string; nameEn?: string; category: Category; barcode?: string; unit?: ProductUnit; note?: string; image?: string; alternatives?: string[] }) => void;
   product?: Product | null;
+  offImageUrl?: string;
 }
 
 export default function ProductForm({ open, onClose, onSave, product }: Props) {
