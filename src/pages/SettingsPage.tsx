@@ -14,6 +14,7 @@ export default function SettingsPage() {
   const { stores, addStore, removeStore } = useStores();
   const [dark, setDark] = useDarkMode();
   const [newStore, setNewStore] = useState('');
+  const { templates, removeTemplate } = useTemplates();
 
   const handleAddStore = () => {
     if (newStore.trim()) {
