@@ -50,22 +50,24 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
           <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('search')} className="pl-10" />
         </div>
-        <div className="flex gap-1.5 overflow-x-auto pb-3 no-scrollbar px-5">
-          <button
-            onClick={() => setFilterCat('all')}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCat === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
-          >
-            {t('all')}
-          </button>
-          {allCategoryKeys.map(c => (
+        <div className="min-w-0 overflow-hidden">
+          <div className="flex gap-1.5 overflow-x-auto pb-3 no-scrollbar px-5">
             <button
-              key={c}
-              onClick={() => setFilterCat(c)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCat === c ? 'bg-primary text-primary-foreground' : CATEGORY_COLORS[c] || 'bg-secondary text-secondary-foreground'}`}
+              onClick={() => setFilterCat('all')}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCat === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
             >
-              {CATEGORY_EMOJI[c] || '📦'} {t(c as any)}
+              {t('all')}
             </button>
-          ))}
+            {allCategoryKeys.map(c => (
+              <button
+                key={c}
+                onClick={() => setFilterCat(c)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCat === c ? 'bg-primary text-primary-foreground' : CATEGORY_COLORS[c] || 'bg-secondary text-secondary-foreground'}`}
+              >
+                {CATEGORY_EMOJI[c] || '📦'} {t(c as any)}
+              </button>
+            ))}
+          </div>
         </div>
         <ScrollArea className="flex-1 px-5 pb-5">
           <div className="space-y-1.5 py-1">
