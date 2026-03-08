@@ -276,6 +276,8 @@ export default function ShoppingListPage() {
   const handleBarcodeAddToCatalog = () => {
     if (barcodeResult) {
       setPrefillBarcode(barcodeResult.barcode);
+      // Pass OFF data to product form via state
+      setPrefillOffData(barcodeResult.offData || null);
       setShowProductForm(true);
     }
     setBarcodeResult(null);
