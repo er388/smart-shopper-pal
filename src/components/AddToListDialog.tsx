@@ -42,15 +42,15 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto rounded-2xl max-h-[85vh] !flex flex-col p-0 gap-0">
-        <DialogHeader className="px-6 pt-6 pb-0">
+      <DialogContent className="max-w-sm mx-auto rounded-2xl max-h-[85vh] !flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-5 pt-5 pb-3">
           <DialogTitle>{t('addToList')}</DialogTitle>
         </DialogHeader>
-        <div className="relative px-6">
-          <Search className="absolute left-9 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+        <div className="relative px-5 pb-3">
+          <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('search')} className="pl-10" />
         </div>
-        <div className="flex gap-1.5 overflow-x-auto pb-2 pt-1 no-scrollbar px-6">
+        <div className="flex gap-1.5 overflow-x-auto pb-3 no-scrollbar px-5">
           <button
             onClick={() => setFilterCat('all')}
             className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCat === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
