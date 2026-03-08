@@ -64,14 +64,12 @@ export default function CatalogPage() {
   const handleDelete = (p: Product) => {
     const idx = products.findIndex(pr => pr.id === p.id);
     const deletedProduct = { ...p };
+    const snapshot = [...products];
     deleteProduct(p.id);
     const name = lang === 'el' ? p.name : (p.nameEn || p.name);
     showUndo(`"${name}" ${t('deleted').toLowerCase()}`, () => {
-      setAllProducts(prev => {
-        const arr = [...products.filter(pr => pr.id !== p.id)];
-        arr.splice(idx, 0, deletedProduct);
-        return arr;
-      });
+      const arr = [...snapshot];
+      setAllProducts(arr);
     });
   };
 

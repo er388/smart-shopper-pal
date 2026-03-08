@@ -165,16 +165,10 @@ export default function ShoppingListPage() {
     if (!item) return;
     const p = getProduct(item.productId);
     const name = p ? (lang === 'el' ? p.name : (p.nameEn || p.name)) : '?';
-    const idx = rawItems.findIndex(i => i.id === id);
-    const removedItem = { ...item };
+    const snapshot = [...rawItems];
     removeItem(id);
     showUndo(`"${name}" ${t('removed').toLowerCase()}`, () => {
-      // Re-insert at position
-      setAllItems(prev => {
-        const arr = [...rawItems.filter(i => i.id !== id)];
-        arr.splice(idx, 0, removedItem);
-        return arr;
-      });
+      setAllItems(snapshot);
     });
   }, [rawItems, removeItem, setAllItems, products, lang, t]);
 
