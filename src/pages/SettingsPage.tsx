@@ -7,6 +7,7 @@ import { useI18n } from '@/lib/i18n';
 import { useStores, useDarkMode, useTemplates } from '@/lib/useStore';
 import CategoryManager from '@/components/CategoryManager';
 import DataManager from '@/components/DataManager';
+import CloudBackup from '@/components/CloudBackup';
 import { toast } from '@/hooks/use-toast';
 
 export default function SettingsPage() {
