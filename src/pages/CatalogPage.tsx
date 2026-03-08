@@ -88,7 +88,7 @@ export default function CatalogPage() {
           Array.from(grouped.entries()).map(([cat, prods]) => (
             <div key={cat} className="mb-5">
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                {CATEGORY_EMOJI[cat]} {t(cat as any)}
+                {CATEGORY_EMOJI[cat] || '📦'} {getCatLabel(cat)}
               </h2>
               <div className="space-y-1.5">
                 <AnimatePresence>
