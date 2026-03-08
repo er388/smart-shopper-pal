@@ -29,7 +29,7 @@ export default function ProductForm({ open, onClose, onSave, product, offImageUr
   const [barcode, setBarcode] = useState(product?.barcode || '');
   const [unit, setUnit] = useState<ProductUnit>(product?.unit || 'τεμ.');
   const [note, setNote] = useState(product?.note || '');
-  const [image, setImage] = useState<string | undefined>(product?.image);
+  const [image, setImage] = useState<string | undefined>(product?.image || (offImageUrl ? undefined : undefined));
   const [alternatives, setAlternatives] = useState<string[]>(product?.alternatives || []);
   const [altSearch, setAltSearch] = useState('');
   const [scannerOpen, setScannerOpen] = useState(false);
