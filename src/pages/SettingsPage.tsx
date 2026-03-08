@@ -67,6 +67,17 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* Smart Uncheck */}
+      <section className="mb-6">
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border">
+          <ArrowUpFromLine size={20} className="text-primary" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-foreground">{t('smartUncheck')}</p>
+          </div>
+          <Switch checked={smartUncheck} onCheckedChange={(v) => { setSmartUncheck(v); localStorage.setItem('smartcart-smart-uncheck', String(v)); }} />
+        </div>
+      </section>
+
       {/* Stores */}
       <section className="mb-6">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
