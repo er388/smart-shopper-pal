@@ -42,32 +42,36 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto rounded-2xl max-h-[85vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-sm mx-auto rounded-2xl max-h-[85vh] !flex flex-col p-0 gap-0">
+        <DialogHeader className="px-5 pt-5 pb-3">
           <DialogTitle>{t('addToList')}</DialogTitle>
         </DialogHeader>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+        <div className="relative px-5 pb-3">
+          <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('search')} className="pl-10" />
         </div>
-        <div className="flex gap-1.5 overflow-x-auto pb-2 pt-1 no-scrollbar -mx-1 px-1">
-          <button
-            onClick={() => setFilterCat('all')}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCat === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
-          >
-            {t('all')}
-          </button>
-          {allCategoryKeys.map(c => (
+        <div className="min-w-0">
+          <div className="flex gap-1.5 overflow-x-auto pb-3 no-scrollbar">
+            <div className="shrink-0 w-5" aria-hidden />
             <button
-              key={c}
-              onClick={() => setFilterCat(c)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCat === c ? 'bg-primary text-primary-foreground' : CATEGORY_COLORS[c] || 'bg-secondary text-secondary-foreground'}`}
+              onClick={() => setFilterCat('all')}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCat === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
             >
-              {CATEGORY_EMOJI[c] || '📦'} {t(c as any)}
+              {t('all')}
             </button>
-          ))}
+            {allCategoryKeys.map(c => (
+              <button
+                key={c}
+                onClick={() => setFilterCat(c)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCat === c ? 'bg-primary text-primary-foreground' : CATEGORY_COLORS[c] || 'bg-secondary text-secondary-foreground'}`}
+              >
+                {CATEGORY_EMOJI[c] || '📦'} {t(c as any)}
+              </button>
+            ))}
+            <div className="shrink-0 w-5" aria-hidden />
+          </div>
         </div>
-        <ScrollArea className="flex-1 -mx-2 px-2">
+        <ScrollArea className="flex-1 px-5 pb-5">
           <div className="space-y-1.5 py-1">
             <AnimatePresence>
               {filtered.map(p => {
