@@ -50,8 +50,9 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
           <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('search')} className="pl-10" />
         </div>
-        <div className="min-w-0 overflow-hidden">
-          <div className="flex gap-1.5 overflow-x-auto pb-3 no-scrollbar px-5">
+        <div className="min-w-0">
+          <div className="flex gap-1.5 overflow-x-auto pb-3 no-scrollbar">
+            <div className="shrink-0 w-5" aria-hidden />
             <button
               onClick={() => setFilterCat('all')}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${filterCat === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'}`}
@@ -67,6 +68,7 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
                 {CATEGORY_EMOJI[c] || '📦'} {t(c as any)}
               </button>
             ))}
+            <div className="shrink-0 w-5" aria-hidden />
           </div>
         </div>
         <ScrollArea className="flex-1 px-5 pb-5">
