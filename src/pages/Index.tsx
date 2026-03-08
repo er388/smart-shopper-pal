@@ -15,6 +15,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import BarcodeScanner from '@/components/BarcodeScanner';
 import ProductForm from '@/components/ProductForm';
 import { showUndo } from '@/components/UndoSnackbar';
+import { lookupBarcode } from '@/lib/openFoodFacts';
+import { LoyaltyCardQuickButton } from '@/components/LoyaltyCardManager';
 
 type SortMode = 'category' | 'store' | 'added';
 
