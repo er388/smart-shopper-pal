@@ -103,8 +103,13 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm text-foreground truncate">
                         {lang === 'el' ? p.name : (p.nameEn || p.name)}
+                        {p.unit && p.unit !== 'τεμ.' && <span className="text-muted-foreground font-normal ml-1">({p.unit})</span>}
                       </p>
-                      <p className="text-xs text-muted-foreground">{t(p.category as any)}</p>
+                      {p.note ? (
+                        <p className="text-xs italic text-muted-foreground truncate">{p.note}</p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">{t(p.category as any)}</p>
+                      )}
                     </div>
                     {changeState && (
                       <span className={`text-[10px] font-medium shrink-0 ${changeState === 'added' ? 'text-primary' : 'text-destructive'}`}>

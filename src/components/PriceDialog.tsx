@@ -46,7 +46,7 @@ export default function PriceDialog({ open, productName, onClose, onConfirm }: P
             <Input type="number" step="1" value={discount} onChange={e => setDiscount(e.target.value)} placeholder="0" inputMode="numeric" className="h-10" />
           </div>
           <div className="flex gap-2 pt-2">
-            <Button variant="ghost" className="flex-1 h-10" onClick={handleSkip}>Skip</Button>
+            <Button variant="ghost" className="flex-1 h-10" onClick={handleSkip}>{t('skip')}</Button>
             <Button className="flex-1 h-10" onClick={handleConfirm}>{t('confirm')}</Button>
           </div>
         </div>

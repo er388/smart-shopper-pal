@@ -6,14 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Camera } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
-import { Product, DEFAULT_CATEGORIES, CATEGORY_EMOJI, Category } from '@/lib/types';
+import { Product, DEFAULT_CATEGORIES, CATEGORY_EMOJI, Category, PRODUCT_UNITS, ProductUnit } from '@/lib/types';
 import { useCustomCategories } from '@/lib/useStore';
 import BarcodeScanner from './BarcodeScanner';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSave: (data: { name: string; nameEn?: string; category: Category; barcode?: string }) => void;
+  onSave: (data: { name: string; nameEn?: string; category: Category; barcode?: string; unit?: ProductUnit; note?: string }) => void;
   product?: Product | null;
 }
 
@@ -24,12 +24,21 @@ export default function ProductForm({ open, onClose, onSave, product }: Props) {
   const [nameEn, setNameEn] = useState(product?.nameEn || '');
   const [category, setCategory] = useState<Category>(product?.category || 'other');
   const [barcode, setBarcode] = useState(product?.barcode || '');
+  const [unit, setUnit] = useState<ProductUnit>(product?.unit || 'τεμ.');
+  const [note, setNote] = useState(product?.note || '');
   const [scannerOpen, setScannerOpen] = useState(false);
 
   const handleSave = () => {
     if (!name.trim()) return;
-    onSave({ name: name.trim(), nameEn: nameEn.trim() || undefined, category, barcode: barcode.trim() || undefined });
-    setName(''); setNameEn(''); setCategory('other'); setBarcode('');
+    onSave({
+      name: name.trim(),
+      nameEn: nameEn.trim() || undefined,
+      category,
+      barcode: barcode.trim() || undefined,
+      unit,
+      note: note.trim().slice(0, 100) || undefined,
+    });
+    setName(''); setNameEn(''); setCategory('other'); setBarcode(''); setUnit('τεμ.'); setNote('');
     onClose();
   };
 
@@ -56,18 +65,40 @@ export default function ProductForm({ open, onClose, onSave, product }: Props) {
               <Label className="text-xs font-medium">{t('productName')} (EN)</Label>
               <Input value={nameEn} onChange={e => setNameEn(e.target.value)} placeholder="e.g. Milk" className="h-10" />
             </div>
+            <div className="flex gap-3">
+              <div className="flex-1 space-y-1.5">
+                <Label className="text-xs font-medium">{t('category')}</Label>
+                <Select value={category} onValueChange={v => setCategory(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {allCategoryKeys.map(c => (
+                      <SelectItem key={c} value={c}>
+                        {getCategoryLabel(c)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-28 space-y-1.5">
+                <Label className="text-xs font-medium">{t('unit')}</Label>
+                <Select value={unit} onValueChange={v => setUnit(v as ProductUnit)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PRODUCT_UNITS.map(u => (
+                      <SelectItem key={u} value={u}>{u}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">{t('category')}</Label>
-              <Select value={category} onValueChange={v => setCategory(v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {allCategoryKeys.map(c => (
-                    <SelectItem key={c} value={c}>
-                      {getCategoryLabel(c)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-xs font-medium">{t('note')} <span className="text-muted-foreground font-normal">({note.length}/100)</span></Label>
+              <Input
+                value={note}
+                onChange={e => setNote(e.target.value.slice(0, 100))}
+                placeholder={t('notePlaceholder')}
+                className="h-10"
+              />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Barcode</Label>

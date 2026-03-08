@@ -75,7 +75,7 @@ export function useProducts() {
     setProducts(prods);
   }, [setProducts]);
 
-  return { products, addProduct, updateProduct, deleteProduct, incrementPurchaseCount, setAllProducts };
+  return { products, addProduct, updateProduct, deleteProduct, incrementPurchaseCount, toggleFavorite, setAllProducts };
 }
 
 export function useShoppingList() {

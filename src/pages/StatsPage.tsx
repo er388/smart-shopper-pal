@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useI18n } from '@/lib/i18n';
 import { useProducts, useStores, usePurchaseHistory, useCompletedPurchases } from '@/lib/useStore';
-import { CATEGORY_EMOJI, CATEGORY_COLORS } from '@/lib/types';
+import { CATEGORY_EMOJI, CATEGORY_COLORS, formatPrice } from '@/lib/types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, ShoppingCart, Store, Tag, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ShoppingCart, Calendar } from 'lucide-react';
 
 const CHART_COLORS = ['hsl(152,55%,38%)', 'hsl(38,85%,55%)', 'hsl(0,72%,51%)', 'hsl(200,80%,50%)', 'hsl(280,60%,50%)', 'hsl(40,90%,50%)'];
 
@@ -17,7 +17,6 @@ export default function StatsPage() {
   const { purchases } = useCompletedPurchases();
   const [period, setPeriod] = useState<Period>('all');
   const [filterStore, setFilterStore] = useState<string | null>(null);
-  const [filterCategory, setFilterCategory] = useState<string | null>(null);
 
   const getProductName = (pid: string) => {
     const p = products.find(pr => pr.id === pid);
@@ -27,7 +26,6 @@ export default function StatsPage() {
 
   const getStoreName = (sid: string) => stores.find(s => s.id === sid)?.name || '?';
 
-  // Filter by period
   const filteredHistory = useMemo(() => {
     let h = history;
     const now = Date.now();
@@ -46,7 +44,6 @@ export default function StatsPage() {
     return p;
   }, [purchases, period, filterStore]);
 
-  // Monthly spending data
   const monthlySpending = useMemo(() => {
     const map = new Map<string, number>();
     filteredPurchases.forEach(p => {
@@ -59,7 +56,6 @@ export default function StatsPage() {
       .map(([month, total]) => ({ month, total: Math.round(total * 100) / 100 }));
   }, [filteredPurchases]);
 
-  // Top products
   const topProducts = useMemo(() => {
     const map = new Map<string, number>();
     filteredHistory.forEach(r => {
@@ -71,15 +67,13 @@ export default function StatsPage() {
       .map(([pid, count]) => ({ name: getProductName(pid), count, pid }));
   }, [filteredHistory, products]);
 
-  // Spending by category
   const categorySpending = useMemo(() => {
     const map = new Map<string, number>();
     filteredHistory.forEach(r => {
       const p = products.find(pr => pr.id === r.productId);
       if (!p) return;
-      const cat = p.category;
       const amount = r.price * (1 - r.discount / 100);
-      map.set(cat, (map.get(cat) || 0) + amount);
+      map.set(p.category, (map.get(p.category) || 0) + amount);
     });
     return Array.from(map.entries())
       .sort((a, b) => b[1] - a[1])
@@ -90,7 +84,6 @@ export default function StatsPage() {
       }));
   }, [filteredHistory, products]);
 
-  // Store comparison for each product
   const storeComparison = useMemo(() => {
     const productStoreMap = new Map<string, Map<string, { total: number; count: number }>>();
     filteredHistory.forEach(r => {
@@ -103,7 +96,7 @@ export default function StatsPage() {
 
     const result: { productId: string; name: string; stores: { storeId: string; storeName: string; avgPrice: number }[] }[] = [];
     productStoreMap.forEach((storeMap, pid) => {
-      if (storeMap.size < 2) return; // Only show products available in multiple stores
+      if (storeMap.size < 2) return;
       const storeEntries = Array.from(storeMap.entries()).map(([sid, { total, count }]) => ({
         storeId: sid,
         storeName: getStoreName(sid),
@@ -114,7 +107,6 @@ export default function StatsPage() {
     return result.slice(0, 10);
   }, [filteredHistory, products, stores]);
 
-  // Price trend indicator for a product
   const getPriceTrend = (pid: string) => {
     const records = history.filter(r => r.productId === pid).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     if (records.length < 2) return null;
@@ -133,7 +125,6 @@ export default function StatsPage() {
     <div className="max-w-lg mx-auto px-4 pt-4 pb-24">
       <h1 className="text-2xl font-bold text-foreground mb-4">{t('statistics')}</h1>
 
-      {/* Filters */}
       <div className="flex gap-2 mb-6 overflow-x-auto no-scrollbar">
         {(['week', 'month', 'all'] as Period[]).map(p => (
           <button
@@ -170,14 +161,13 @@ export default function StatsPage() {
         </div>
       ) : (
         <>
-          {/* Summary cards */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             <div className="p-4 rounded-2xl bg-card border border-border">
               <div className="flex items-center gap-2 mb-1">
                 <ShoppingCart size={16} className="text-primary" />
                 <span className="text-xs text-muted-foreground">{t('totalSpending')}</span>
               </div>
-              <p className="text-xl font-bold text-foreground">€{totalSpent.toFixed(2)}</p>
+              <p className="text-xl font-bold text-foreground">{formatPrice(totalSpent)}</p>
             </div>
             <div className="p-4 rounded-2xl bg-card border border-border">
               <div className="flex items-center gap-2 mb-1">
@@ -188,7 +178,6 @@ export default function StatsPage() {
             </div>
           </div>
 
-          {/* Monthly spending chart */}
           {monthlySpending.length > 0 && (
             <section className="mb-6">
               <h2 className="text-sm font-semibold text-foreground mb-3">{t('monthlySpending')}</h2>
@@ -200,7 +189,7 @@ export default function StatsPage() {
                     <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                     <Tooltip
                       contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 12, fontSize: 12 }}
-                      formatter={(value: number) => [`€${value.toFixed(2)}`, t('total')]}
+                      formatter={(value: number) => [formatPrice(value), t('total')]}
                     />
                     <Bar dataKey="total" fill="hsl(152,55%,38%)" radius={[6, 6, 0, 0]} />
                   </BarChart>
@@ -209,7 +198,6 @@ export default function StatsPage() {
             </section>
           )}
 
-          {/* Category spending pie */}
           {categorySpending.length > 0 && (
             <section className="mb-6">
               <h2 className="text-sm font-semibold text-foreground mb-3">{t('byCategory')}</h2>
@@ -223,7 +211,7 @@ export default function StatsPage() {
                     </Pie>
                     <Tooltip
                       contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 12, fontSize: 12 }}
-                      formatter={(value: number) => [`€${value.toFixed(2)}`]}
+                      formatter={(value: number) => [formatPrice(value)]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -231,7 +219,7 @@ export default function StatsPage() {
                   {categorySpending.map((c, i) => (
                     <span key={c.category} className="text-[10px] flex items-center gap-1">
                       <span className="w-2 h-2 rounded-full" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
-                      {c.name} (€{c.value.toFixed(2)})
+                      {c.name} ({formatPrice(c.value)})
                     </span>
                   ))}
                 </div>
@@ -239,7 +227,6 @@ export default function StatsPage() {
             </section>
           )}
 
-          {/* Top products */}
           {topProducts.length > 0 && (
             <section className="mb-6">
               <h2 className="text-sm font-semibold text-foreground mb-3">{t('topProducts')}</h2>
@@ -270,7 +257,6 @@ export default function StatsPage() {
             </section>
           )}
 
-          {/* Store comparison */}
           {storeComparison.length > 0 && (
             <section className="mb-6">
               <h2 className="text-sm font-semibold text-foreground mb-3">{t('storeComparison')}</h2>
@@ -284,7 +270,7 @@ export default function StatsPage() {
                           key={s.storeId}
                           className={`text-xs px-2 py-1 rounded-lg ${i === 0 ? 'bg-primary/10 text-primary font-medium' : 'bg-secondary text-secondary-foreground'}`}
                         >
-                          {s.storeName}: €{s.avgPrice.toFixed(2)}
+                          {s.storeName}: {formatPrice(s.avgPrice)}
                           {i === 0 && ' ✓'}
                         </span>
                       ))}
