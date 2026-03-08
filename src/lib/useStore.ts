@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Product, ShoppingItem, Store, PurchaseRecord, CompletedPurchase, Category, CustomCategory, AppData, DEFAULT_CATEGORIES, DEFAULT_CATEGORY_EMOJI, DEFAULT_CATEGORY_COLORS, CATEGORY_EMOJI, CATEGORY_COLORS, ProductUnit } from './types';
+import { Product, ShoppingItem, Store, PurchaseRecord, CompletedPurchase, Category, CustomCategory, AppData, DEFAULT_CATEGORIES, DEFAULT_CATEGORY_EMOJI, DEFAULT_CATEGORY_COLORS, CATEGORY_EMOJI, CATEGORY_COLORS, ProductUnit, ListTemplate } from './types';
 
 function useLocalStorage<T>(key: string, initial: T): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [value, setValue] = useState<T>(() => {
@@ -192,6 +192,26 @@ export function useCompletedPurchases() {
   return { purchases, addPurchase };
 }
 
+export function useTemplates() {
+  const [templates, setTemplates] = useLocalStorage<ListTemplate[]>('smartcart-templates', []);
+
+  const addTemplate = useCallback((name: string, items: { productId: string; quantity: number; storeId?: string | null }[]) => {
+    const t: ListTemplate = { id: uid(), name, items, createdAt: new Date().toISOString() };
+    setTemplates(prev => [...prev, t]);
+    return t;
+  }, [setTemplates]);
+
+  const removeTemplate = useCallback((id: string) => {
+    setTemplates(prev => prev.filter(t => t.id !== id));
+  }, [setTemplates]);
+
+  const setAllTemplates = useCallback((ts: ListTemplate[]) => {
+    setTemplates(ts);
+  }, [setTemplates]);
+
+  return { templates, addTemplate, removeTemplate, setAllTemplates };
+}
+
 export function useCustomCategories() {
   const [categories, setCategories] = useLocalStorage<CustomCategory[]>('smartcart-custom-categories', []);
 
@@ -251,6 +271,7 @@ export function exportAppData(): AppData {
     completedPurchases: get('smartcart-completed-purchases') || [],
     customCategories: get('smartcart-custom-categories') || [],
     activeStoreId: get('smartcart-active-store'),
+    templates: get('smartcart-templates') || [],
   };
 }
 
@@ -261,6 +282,7 @@ export function importAppData(data: AppData) {
   localStorage.setItem('smartcart-history', JSON.stringify(data.purchaseHistory || []));
   localStorage.setItem('smartcart-completed-purchases', JSON.stringify(data.completedPurchases || []));
   localStorage.setItem('smartcart-custom-categories', JSON.stringify(data.customCategories || []));
+  localStorage.setItem('smartcart-templates', JSON.stringify(data.templates || []));
   if (data.activeStoreId !== undefined) {
     localStorage.setItem('smartcart-active-store', JSON.stringify(data.activeStoreId));
   }
