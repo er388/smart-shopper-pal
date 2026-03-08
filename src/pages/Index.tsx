@@ -163,8 +163,69 @@ export default function ShoppingListPage() {
 
   const existingProductIds = useMemo(() => new Set(items.map(i => i.productId)), [items]);
 
+  // Duplicate-aware add
+  const addItemWithDuplicateCheck = useCallback((productId: string, quantity = 1, storeId?: string | null) => {
+    const normalizedName = (name: string) => name.toLowerCase().replace(/\s+/g, ' ').trim();
+    const targetProduct = products.find(p => p.id === productId);
+    
+    // Check by product ID first
+    const existingById = rawItems.find(i => i.productId === productId);
+    if (existingById) {
+      setDuplicateInfo({ productId, pendingStoreId: storeId ?? null });
+      return;
+    }
+    
+    // Check by name (case-insensitive, collapsed spaces)
+    if (targetProduct) {
+      const targetName = normalizedName(targetProduct.name);
+      const existingByName = rawItems.find(i => {
+        const p = products.find(pp => pp.id === i.productId);
+        return p && normalizedName(p.name) === targetName;
+      });
+      if (existingByName) {
+        setDuplicateInfo({ productId: existingByName.productId, pendingStoreId: storeId ?? null });
+        return;
+      }
+    }
+    
+    addItem(productId, quantity, storeId);
+  }, [rawItems, products, addItem]);
+
+  const handleDuplicateIncrease = useCallback(() => {
+    if (!duplicateInfo) return;
+    const existing = rawItems.find(i => i.productId === duplicateInfo.productId);
+    if (existing) {
+      const step = getStep(products.find(p => p.id === duplicateInfo.productId)?.unit);
+      updateQuantity(existing.id, Math.round((existing.quantity + step) * 100) / 100);
+    }
+    setDuplicateInfo(null);
+  }, [duplicateInfo, rawItems, products, updateQuantity]);
+
+  const handleDuplicateAddAgain = useCallback(() => {
+    if (!duplicateInfo) return;
+    addItem(duplicateInfo.productId, 1, duplicateInfo.pendingStoreId);
+    setDuplicateInfo(null);
+  }, [duplicateInfo, addItem]);
+
   const handleCheck = (id: string) => {
+    const item = rawItems.find(i => i.id === id);
+    const wasChecked = item?.checked;
     toggleCheck(id);
+    
+    // Smart uncheck: if unchecking, move to top
+    if (wasChecked && smartUncheck) {
+      setTimeout(() => {
+        setAllItems(prev => {
+          const updated = [...prev];
+          const idx = updated.findIndex(i => i.id === id);
+          if (idx > 0) {
+            const [moved] = updated.splice(idx, 1);
+            updated.unshift(moved);
+          }
+          return updated;
+        });
+      }, 50);
+    }
   };
 
   const handleUpdatePrice = useCallback((id: string, priceStr: string) => {
