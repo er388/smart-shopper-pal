@@ -42,7 +42,7 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto rounded-2xl max-h-[85vh] flex flex-col overflow-hidden">
+      <DialogContent className="max-w-sm mx-auto rounded-2xl max-h-[85vh] flex flex-col !overflow-visible">
         <DialogHeader>
           <DialogTitle>{t('addToList')}</DialogTitle>
         </DialogHeader>
