@@ -795,7 +795,7 @@ export default function ShoppingListPage() {
       {/* Product form for barcode add */}
       <ProductForm
         open={showProductForm}
-        onClose={() => { setShowProductForm(false); setPrefillBarcode(''); }}
+        onClose={() => { setShowProductForm(false); setPrefillBarcode(''); setPrefillOffData(null); }}
         onSave={(data) => {
           const newP = addProduct(data);
           if (newP) {
@@ -803,7 +803,8 @@ export default function ShoppingListPage() {
             toast({ title: t('added') });
           }
         }}
-        product={prefillBarcode ? { barcode: prefillBarcode } as any : undefined}
+        product={prefillBarcode ? { barcode: prefillBarcode, name: prefillOffData?.name || '', category: prefillOffData?.category || 'other' } as any : undefined}
+        offImageUrl={prefillOffData?.imageUrl}
       />
 
       {/* Budget Modal */}
