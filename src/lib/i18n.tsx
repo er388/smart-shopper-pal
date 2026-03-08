@@ -50,7 +50,7 @@ const translations = {
     snacks: 'Σνακ',
     other: 'Άλλο',
     itemsCount: 'προϊόντα',
-    appTitle: 'SmartCart',
+    appTitle: 'Pson.io',
     version: 'Έκδοση 1.0',
   },
   en: {
