@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Plus, Check } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
-import { Product, CATEGORIES, CATEGORY_EMOJI, Category, CATEGORY_COLORS } from '@/lib/types';
+import { Product, CATEGORY_EMOJI, Category, CATEGORY_COLORS } from '@/lib/types';
+import { useCustomCategories } from '@/lib/useStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { motion, AnimatePresence } from 'framer-motion';
 
