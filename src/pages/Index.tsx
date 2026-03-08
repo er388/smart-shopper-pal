@@ -802,7 +802,7 @@ export default function ShoppingListPage() {
         onClose={() => setShowAdd(false)}
         products={products}
         existingProductIds={items.map(i => i.productId)}
-        onAdd={pid => addItem(pid, 1, activeStoreId)}
+        onAdd={pid => addItemWithDuplicateCheck(pid, 1, activeStoreId)}
         onRemove={pid => removeByProductId(pid)}
       />
 
