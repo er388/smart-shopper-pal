@@ -297,6 +297,24 @@ export function useBudget() {
   return { budget, setBudget, clearBudget };
 }
 
+export function useLoyaltyCards() {
+  const [cards, setCards] = useLocalStorage<LoyaltyCard[]>('smartcart-loyalty-cards', []);
+
+  const addCard = useCallback((card: Omit<LoyaltyCard, 'id'>) => {
+    setCards(prev => [...prev, { ...card, id: uid() }]);
+  }, [setCards]);
+
+  const removeCard = useCallback((id: string) => {
+    setCards(prev => prev.filter(c => c.id !== id));
+  }, [setCards]);
+
+  const setAllCards = useCallback((newCards: LoyaltyCard[]) => {
+    setCards(newCards);
+  }, [setCards]);
+
+  return { cards, addCard, removeCard, setAllCards };
+}
+
 export function useDarkMode() {
   const [dark, setDark] = useLocalStorage('smartcart-dark', false);
   useEffect(() => {
