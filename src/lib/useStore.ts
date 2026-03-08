@@ -50,9 +50,13 @@ export function useProducts() {
   const [products, setProducts] = useLocalStorage<Product[]>('smartcart-products', DEFAULT_PRODUCTS);
 
   const addProduct = useCallback((p: Omit<Product, 'id' | 'purchaseCount'>) => {
-    const newP: Product = { ...p, id: uid(), purchaseCount: 0 };
+    const newP: Product = { ...p, id: uid(), purchaseCount: 0, unit: p.unit || 'τεμ.' };
     setProducts(prev => [...prev, newP]);
     return newP;
+  }, [setProducts]);
+
+  const toggleFavorite = useCallback((id: string) => {
+    setProducts(prev => prev.map(p => p.id === id ? { ...p, favorite: !p.favorite } : p));
   }, [setProducts]);
 
   const updateProduct = useCallback((id: string, updates: Partial<Product>) => {
