@@ -27,6 +27,7 @@ export default function ShoppingListPage() {
   const [showLoadTemplate, setShowLoadTemplate] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [quickAddOpen, setQuickAddOpen] = useState(true);
+  const [fullImageSrc, setFullImageSrc] = useState<string | null>(null);
 
   const getProduct = (pid: string) => products.find(p => p.id === pid);
   const productName = (pid: string) => {
