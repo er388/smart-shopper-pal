@@ -244,6 +244,14 @@ const translations = {
     oneDrive: 'OneDrive',
     dropbox: 'Dropbox',
     removePhoto: 'Remove photo',
+    scanBarcode: 'Scan Barcode',
+    barcodeNotFound: 'No product found with this barcode.',
+    addToCatalog: 'Add to catalog',
+    sortByCategory: 'Category',
+    sortByStore: 'Store',
+    sortByAdded: 'Added order',
+    deleted: 'Deleted',
+    undo: 'Undo',
   },
 } as const;
 
