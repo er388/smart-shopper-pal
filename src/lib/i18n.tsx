@@ -345,6 +345,27 @@ const translations = {
     products_count: 'products',
     reloadConfirm: 'How do you want to load the list?',
     listReloaded: 'List reloaded!',
+    // Open Food Facts
+    foundOnOFF: 'Found on Open Food Facts — please verify',
+    // Loyalty Cards
+    loyaltyCards: 'Loyalty Cards',
+    noLoyaltyCards: 'No cards yet',
+    addLoyaltyCard: 'Add card',
+    cardName: 'Card name',
+    cardNamePlaceholder: 'e.g. Store Club Card',
+    cardNumber: 'Card number',
+    barcodeType: 'Barcode type',
+    tapToClose: 'Tap to close',
+    showCard: 'Show card',
+    // Receipt OCR
+    scanReceipt: 'Scan Receipt',
+    ocrAccuracyWarning: 'Accuracy depends on photo quality',
+    processingReceipt: 'Processing receipt...',
+    recognizedItems: 'Recognized items',
+    noItemsRecognized: 'No items recognized',
+    noConfirmedItems: 'No confirmed items',
+    receiptSaved: 'Receipt saved!',
+    ocrError: 'Recognition error',
   },
 } as const;
 
