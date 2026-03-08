@@ -98,6 +98,14 @@ export interface CompletedPurchase {
   total: number;
 }
 
+// Shopping list template
+export interface ListTemplate {
+  id: string;
+  name: string;
+  items: { productId: string; quantity: number; storeId?: string | null }[];
+  createdAt: string;
+}
+
 // All app data for export/import
 export interface AppData {
   products: Product[];
@@ -107,4 +115,5 @@ export interface AppData {
   completedPurchases: CompletedPurchase[];
   customCategories: CustomCategory[];
   activeStoreId: string | null;
+  templates?: ListTemplate[];
 }
