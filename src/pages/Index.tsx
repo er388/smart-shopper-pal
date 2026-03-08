@@ -720,7 +720,7 @@ export default function ShoppingListPage() {
                         if (inList) {
                           removeByProductId(p.id);
                         } else {
-                          addItem(p.id, 1, activeStoreId);
+                          addItemWithDuplicateCheck(p.id, 1, activeStoreId);
                         }
                       }}
                       className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all active:scale-95 ${
