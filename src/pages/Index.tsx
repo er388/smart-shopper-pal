@@ -763,6 +763,23 @@ export default function ShoppingListPage() {
                 <Plus size={16} className="mr-1.5" /> {t('addToList')}
               </Button>
             </div>
+          ) : barcodeResult?.offData ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50">
+                {barcodeResult.offData.imageUrl && (
+                  <img src={barcodeResult.offData.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover" />
+                )}
+                <div>
+                  <p className="text-sm font-medium text-foreground">{barcodeResult.offData.name}</p>
+                  {barcodeResult.offData.brand && <p className="text-xs text-muted-foreground">{barcodeResult.offData.brand}</p>}
+                  <p className="text-[10px] text-muted-foreground font-mono">{barcodeResult.barcode}</p>
+                </div>
+              </div>
+              <p className="text-xs text-primary text-center">{t('foundOnOFF')}</p>
+              <Button className="w-full rounded-xl" onClick={handleBarcodeAddToCatalog}>
+                <Plus size={16} className="mr-1.5" /> {t('addToCatalog')}
+              </Button>
+            </div>
           ) : (
             <div className="space-y-3 text-center">
               <p className="text-sm text-muted-foreground">{t('barcodeNotFound')}</p>
