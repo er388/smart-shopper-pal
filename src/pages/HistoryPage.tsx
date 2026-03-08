@@ -95,7 +95,12 @@ export default function HistoryPage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-24">
-      <h1 className="text-2xl font-bold text-foreground mb-4">{t('purchaseHistoryList')}</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold text-foreground">{t('purchaseHistoryList')}</h1>
+        <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setReceiptScannerOpen(true)}>
+          <ScanLine size={16} className="mr-1.5" /> {t('scanReceipt')}
+        </Button>
+      </div>
 
       {/* Filters */}
       <div className="flex gap-2 mb-4">
