@@ -215,15 +215,15 @@ export default function ShoppingListPage() {
     // Smart uncheck: if unchecking, move to top
     if (wasChecked && smartUncheck) {
       setTimeout(() => {
-        setAllItems(prev => {
-          const updated = [...prev];
-          const idx = updated.findIndex(i => i.id === id);
-          if (idx > 0) {
-            const [moved] = updated.splice(idx, 1);
-            updated.unshift(moved);
-          }
-          return updated;
-        });
+        const currentItems = [...rawItems];
+        const idx = currentItems.findIndex(i => i.id === id);
+        if (idx > 0) {
+          const [moved] = currentItems.splice(idx, 1);
+          moved.checked = false;
+          moved.checkedAt = undefined;
+          currentItems.unshift(moved);
+          setAllItems(currentItems);
+        }
       }, 50);
     }
   };
