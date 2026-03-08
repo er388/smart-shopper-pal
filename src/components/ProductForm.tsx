@@ -9,6 +9,7 @@ import { useI18n } from '@/lib/i18n';
 import { Product, DEFAULT_CATEGORIES, CATEGORY_EMOJI, Category, PRODUCT_UNITS, ProductUnit } from '@/lib/types';
 import { useCustomCategories } from '@/lib/useStore';
 import BarcodeScanner from './BarcodeScanner';
+import { toast } from '@/hooks/use-toast';
 
 interface Props {
   open: boolean;
