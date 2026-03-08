@@ -37,6 +37,10 @@ export interface CustomCategory {
   color: string;
 }
 
+export type ProductUnit = 'τεμ.' | 'kg' | 'gr' | 'lt' | 'ml' | 'μάτσο' | 'πακέτο' | 'κιβώτιο';
+
+export const PRODUCT_UNITS: ProductUnit[] = ['τεμ.', 'kg', 'gr', 'lt', 'ml', 'μάτσο', 'πακέτο', 'κιβώτιο'];
+
 export interface Product {
   id: string;
   name: string;
@@ -44,6 +48,14 @@ export interface Product {
   category: Category;
   barcode?: string;
   purchaseCount: number;
+  unit?: ProductUnit;
+  note?: string;
+  favorite?: boolean;
+}
+
+/** Format a number as € x,xx */
+export function formatPrice(value: number): string {
+  return `€ ${value.toFixed(2).replace('.', ',')}`;
 }
 
 export interface ShoppingItem {

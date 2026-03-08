@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Product, ShoppingItem, Store, PurchaseRecord, CompletedPurchase, Category, CustomCategory, AppData, DEFAULT_CATEGORIES, DEFAULT_CATEGORY_EMOJI, DEFAULT_CATEGORY_COLORS, CATEGORY_EMOJI, CATEGORY_COLORS } from './types';
+import { Product, ShoppingItem, Store, PurchaseRecord, CompletedPurchase, Category, CustomCategory, AppData, DEFAULT_CATEGORIES, DEFAULT_CATEGORY_EMOJI, DEFAULT_CATEGORY_COLORS, CATEGORY_EMOJI, CATEGORY_COLORS, ProductUnit } from './types';
 
 function useLocalStorage<T>(key: string, initial: T): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [value, setValue] = useState<T>(() => {
@@ -50,9 +50,13 @@ export function useProducts() {
   const [products, setProducts] = useLocalStorage<Product[]>('smartcart-products', DEFAULT_PRODUCTS);
 
   const addProduct = useCallback((p: Omit<Product, 'id' | 'purchaseCount'>) => {
-    const newP: Product = { ...p, id: uid(), purchaseCount: 0 };
+    const newP: Product = { ...p, id: uid(), purchaseCount: 0, unit: p.unit || 'τεμ.' };
     setProducts(prev => [...prev, newP]);
     return newP;
+  }, [setProducts]);
+
+  const toggleFavorite = useCallback((id: string) => {
+    setProducts(prev => prev.map(p => p.id === id ? { ...p, favorite: !p.favorite } : p));
   }, [setProducts]);
 
   const updateProduct = useCallback((id: string, updates: Partial<Product>) => {
@@ -71,7 +75,7 @@ export function useProducts() {
     setProducts(prods);
   }, [setProducts]);
 
-  return { products, addProduct, updateProduct, deleteProduct, incrementPurchaseCount, setAllProducts };
+  return { products, addProduct, updateProduct, deleteProduct, incrementPurchaseCount, toggleFavorite, setAllProducts };
 }
 
 export function useShoppingList() {

@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Plus, Search, Store, Trash2, Minus, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useI18n } from '@/lib/i18n';
 import { useProducts, useShoppingList, useStores, usePurchaseHistory, useCompletedPurchases } from '@/lib/useStore';
-import { CATEGORY_EMOJI, CATEGORY_COLORS } from '@/lib/types';
+import { CATEGORY_EMOJI, CATEGORY_COLORS, formatPrice } from '@/lib/types';
 import AddToListDialog from '@/components/AddToListDialog';
 import PriceDialog from '@/components/PriceDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -39,7 +39,6 @@ export default function ShoppingListPage() {
     });
   }, [items, search, products]);
 
-  // Group items by store
   const groupedByStore = useMemo(() => {
     const map = new Map<string | null, typeof filteredItems>();
     filteredItems.forEach(item => {
@@ -54,7 +53,6 @@ export default function ShoppingListPage() {
   const storeKeys = useMemo(() => {
     const keys: (string | null)[] = [];
     groupedByStore.forEach((_, key) => keys.push(key));
-    // Sort: named stores first, null last
     return keys.sort((a, b) => {
       if (a === null) return 1;
       if (b === null) return -1;
@@ -101,11 +99,10 @@ export default function ShoppingListPage() {
       total,
     });
 
-    // Increment purchase counts
     checkedItems.forEach(i => incrementPurchaseCount(i.productId));
 
     clearChecked();
-    toast({ title: t('purchaseCompleted'), description: `€${total.toFixed(2)}` });
+    toast({ title: t('purchaseCompleted'), description: formatPrice(total) });
   };
 
   const toggleCollapse = (storeId: string | null) => {
@@ -125,6 +122,8 @@ export default function ShoppingListPage() {
 
   const renderItem = (item: typeof items[0], isChecked: boolean) => {
     const p = getProduct(item.productId);
+    const unitLabel = p?.unit && p.unit !== 'τεμ.' ? p.unit : 'τεμ.';
+
     if (isChecked) {
       return (
         <motion.div
@@ -151,12 +150,12 @@ export default function ShoppingListPage() {
               {productName(item.productId)}
             </p>
           </div>
-          {item.price && (
+          {item.price != null && (
             <span className="text-xs font-medium text-muted-foreground">
-              €{(item.price * (1 - (item.discount || 0) / 100) * item.quantity).toFixed(2)}
+              {formatPrice(item.price * (1 - (item.discount || 0) / 100) * item.quantity)}
             </span>
           )}
-          <span className="text-xs text-muted-foreground">×{item.quantity}</span>
+          <span className="text-xs text-muted-foreground">×{item.quantity} {unitLabel}</span>
         </motion.div>
       );
     }
@@ -181,22 +180,27 @@ export default function ShoppingListPage() {
           <p className="text-sm font-medium text-foreground truncate">
             {productName(item.productId)}
           </p>
-          {p && <p className="text-[11px] text-muted-foreground">{t(p.category as any)}</p>}
+          {p?.note && <p className="text-[11px] italic text-muted-foreground truncate">{p.note}</p>}
+          {p && !p.note && <p className="text-[11px] text-muted-foreground">{t(p.category as any)}</p>}
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-            className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-secondary-foreground"
+            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-secondary-foreground min-w-[32px] min-h-[32px]"
           >
             <Minus size={14} />
           </button>
-          <span className="w-6 text-center text-sm font-semibold text-foreground">{item.quantity}</span>
+          <InlineQuantityInput
+            value={item.quantity}
+            onChange={(val) => updateQuantity(item.id, val)}
+          />
           <button
             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-            className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center text-secondary-foreground"
+            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-secondary-foreground min-w-[32px] min-h-[32px]"
           >
             <Plus size={14} />
           </button>
+          <span className="text-[10px] text-muted-foreground w-8">{unitLabel}</span>
         </div>
       </motion.div>
     );
@@ -220,7 +224,7 @@ export default function ShoppingListPage() {
           <span className="text-sm font-semibold text-foreground flex-1 text-left">{storeName}</span>
           <span className="text-xs text-muted-foreground">{storeItems.length} {t('itemsCount')}</span>
           {storeTotal > 0 && (
-            <span className="text-xs font-medium text-primary">€{storeTotal.toFixed(2)}</span>
+            <span className="text-xs font-medium text-primary">{formatPrice(storeTotal)}</span>
           )}
           {collapsed ? <ChevronDown size={16} className="text-muted-foreground" /> : <ChevronUp size={16} className="text-muted-foreground" />}
         </button>
@@ -254,7 +258,6 @@ export default function ShoppingListPage() {
           )}
         </div>
 
-        {/* Store selector for new items */}
         <div className="flex gap-2 mb-3">
           <Select value={activeStoreId || 'none'} onValueChange={v => setActiveStoreId(v === 'none' ? null : v)}>
             <SelectTrigger className="h-9 rounded-xl text-sm">
@@ -268,7 +271,6 @@ export default function ShoppingListPage() {
           </Select>
         </div>
 
-        {/* Search */}
         {totalCount > 3 && (
           <div className="relative mb-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
@@ -278,7 +280,6 @@ export default function ShoppingListPage() {
       </div>
 
       <div className="px-4 pb-24">
-        {/* Actions bar */}
         {checkedCount > 0 && (
           <div className="flex items-center justify-between mb-3">
             <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive" onClick={clearChecked}>
@@ -290,12 +291,10 @@ export default function ShoppingListPage() {
           </div>
         )}
 
-        {/* Items grouped by store */}
         {hasMultipleStores ? (
           storeKeys.map(storeId => renderStoreSection(storeId))
         ) : (
           <>
-            {/* Single store / flat view */}
             <AnimatePresence>
               {filteredItems.filter(i => i.checked).length > 0 && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4">
@@ -317,7 +316,6 @@ export default function ShoppingListPage() {
           </>
         )}
 
-        {/* Empty state */}
         {totalCount === 0 && (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">🛒</div>
@@ -329,18 +327,16 @@ export default function ShoppingListPage() {
           </div>
         )}
 
-        {/* Grand Total */}
         {total > 0 && (
           <div className="mt-6 p-4 rounded-2xl bg-primary/10 border border-primary/20">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-foreground">{hasMultipleStores ? t('grandTotal') : t('total')}</span>
-              <span className="text-xl font-bold text-primary">€{total.toFixed(2)}</span>
+              <span className="text-xl font-bold text-primary">{formatPrice(total)}</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* FAB */}
       {totalCount > 0 && (
         <button
           onClick={() => setShowAdd(true)}
@@ -368,5 +364,46 @@ export default function ShoppingListPage() {
         />
       )}
     </div>
+  );
+}
+
+function InlineQuantityInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [tempVal, setTempVal] = useState(String(value));
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const commit = () => {
+    setEditing(false);
+    const parsed = parseInt(tempVal, 10);
+    if (!parsed || parsed < 1 || isNaN(parsed)) {
+      onChange(1);
+    } else {
+      onChange(parsed);
+    }
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        type="text"
+        inputMode="numeric"
+        value={tempVal}
+        onChange={e => setTempVal(e.target.value.replace(/\D/g, ''))}
+        onBlur={commit}
+        onKeyDown={e => e.key === 'Enter' && commit()}
+        className="w-10 h-8 text-center text-sm font-semibold bg-background border border-primary rounded-lg outline-none text-foreground"
+        autoFocus
+      />
+    );
+  }
+
+  return (
+    <button
+      onClick={() => { setTempVal(String(value)); setEditing(true); }}
+      className="w-10 h-8 text-center text-sm font-semibold text-foreground rounded-lg hover:bg-secondary/50 transition-colors min-w-[40px] min-h-[32px]"
+    >
+      {value}
+    </button>
   );
 }

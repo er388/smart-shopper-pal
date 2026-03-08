@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/lib/i18n';
@@ -7,13 +7,14 @@ import { useProducts, useCustomCategories } from '@/lib/useStore';
 import { CATEGORY_EMOJI, CATEGORY_COLORS, Category, Product } from '@/lib/types';
 import ProductForm from '@/components/ProductForm';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from '@/hooks/use-toast';
 
 export default function CatalogPage() {
   const { t, lang } = useI18n();
-  const { products, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { products, addProduct, updateProduct, deleteProduct, toggleFavorite } = useProducts();
   const { allCategoryKeys, customCategories } = useCustomCategories();
   const [search, setSearch] = useState('');
-  const [filterCat, setFilterCat] = useState<Category | 'all'>('all');
+  const [filterCat, setFilterCat] = useState<Category | 'all' | 'favorites'>('all');
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
 
@@ -25,12 +26,18 @@ export default function CatalogPage() {
 
   const filtered = useMemo(() => {
     let list = products;
-    if (filterCat !== 'all') list = list.filter(p => p.category === filterCat);
+    if (filterCat === 'favorites') list = list.filter(p => p.favorite);
+    else if (filterCat !== 'all') list = list.filter(p => p.category === filterCat);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(p => p.name.toLowerCase().includes(q) || p.nameEn?.toLowerCase().includes(q));
     }
-    return list;
+    // Sort favorites first
+    return [...list].sort((a, b) => {
+      if (a.favorite && !b.favorite) return -1;
+      if (!a.favorite && b.favorite) return 1;
+      return 0;
+    });
   }, [products, filterCat, search]);
 
   const grouped = useMemo(() => {
@@ -43,7 +50,7 @@ export default function CatalogPage() {
     return map;
   }, [filtered]);
 
-  const handleSave = (data: { name: string; nameEn?: string; category: Category; barcode?: string }) => {
+  const handleSave = (data: Parameters<typeof addProduct>[0]) => {
     if (editing) {
       updateProduct(editing.id, data);
       setEditing(null);
@@ -51,6 +58,16 @@ export default function CatalogPage() {
       addProduct(data);
     }
   };
+
+  const handleToggleFavorite = (p: Product) => {
+    toggleFavorite(p.id);
+    toast({
+      title: p.favorite ? t('favoriteRemoved') : t('favoriteAdded'),
+      duration: 1500,
+    });
+  };
+
+  const favCount = products.filter(p => p.favorite).length;
 
   return (
     <div className="max-w-lg mx-auto">
@@ -67,6 +84,14 @@ export default function CatalogPage() {
           >
             {t('all')} ({products.length})
           </button>
+          {favCount > 0 && (
+            <button
+              onClick={() => setFilterCat('favorites')}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1 ${filterCat === 'favorites' ? 'bg-primary text-primary-foreground' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'}`}
+            >
+              <Star size={12} fill="currentColor" /> {favCount}
+            </button>
+          )}
           {allCategoryKeys.map(c => {
             const count = products.filter(p => p.category === c).length;
             if (count === 0) return null;
@@ -84,7 +109,7 @@ export default function CatalogPage() {
       </div>
 
       <div className="px-4 pb-24">
-        {filterCat === 'all' ? (
+        {filterCat === 'all' || filterCat === 'favorites' ? (
           Array.from(grouped.entries()).map(([cat, prods]) => (
             <div key={cat} className="mb-5">
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -93,7 +118,7 @@ export default function CatalogPage() {
               <div className="space-y-1.5">
                 <AnimatePresence>
                   {prods.map(p => (
-                    <ProductCard key={p.id} product={p} lang={lang} t={t} onEdit={() => { setEditing(p); setFormOpen(true); }} onDelete={() => deleteProduct(p.id)} />
+                    <ProductCard key={p.id} product={p} lang={lang} t={t} onEdit={() => { setEditing(p); setFormOpen(true); }} onDelete={() => deleteProduct(p.id)} onToggleFav={() => handleToggleFavorite(p)} />
                   ))}
                 </AnimatePresence>
               </div>
@@ -103,7 +128,7 @@ export default function CatalogPage() {
           <div className="space-y-1.5">
             <AnimatePresence>
               {filtered.map(p => (
-                <ProductCard key={p.id} product={p} lang={lang} t={t} onEdit={() => { setEditing(p); setFormOpen(true); }} onDelete={() => deleteProduct(p.id)} />
+                <ProductCard key={p.id} product={p} lang={lang} t={t} onEdit={() => { setEditing(p); setFormOpen(true); }} onDelete={() => deleteProduct(p.id)} onToggleFav={() => handleToggleFavorite(p)} />
               ))}
             </AnimatePresence>
           </div>
@@ -139,7 +164,7 @@ export default function CatalogPage() {
   );
 }
 
-function ProductCard({ product, lang, t, onEdit, onDelete }: { product: Product; lang: string; t: any; onEdit: () => void; onDelete: () => void }) {
+function ProductCard({ product, lang, t, onEdit, onDelete, onToggleFav }: { product: Product; lang: string; t: any; onEdit: () => void; onDelete: () => void; onToggleFav: () => void }) {
   return (
     <motion.div
       layout
@@ -154,12 +179,21 @@ function ProductCard({ product, lang, t, onEdit, onDelete }: { product: Product;
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">
           {lang === 'el' ? product.name : (product.nameEn || product.name)}
+          {product.unit && product.unit !== 'τεμ.' && (
+            <span className="text-muted-foreground font-normal ml-1">({product.unit})</span>
+          )}
         </p>
         {product.nameEn && lang === 'el' && (
           <p className="text-[11px] text-muted-foreground truncate">{product.nameEn}</p>
         )}
+        {product.note && (
+          <p className="text-[11px] italic text-muted-foreground truncate">📝 {product.note}</p>
+        )}
       </div>
       <div className="flex gap-1">
+        <button onClick={onToggleFav} className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-secondary">
+          <Star size={15} className={product.favorite ? 'text-amber-500 fill-amber-500' : 'text-muted-foreground'} />
+        </button>
         <button onClick={onEdit} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors">
           <Edit2 size={15} />
         </button>
