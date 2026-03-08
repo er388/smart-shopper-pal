@@ -11,10 +11,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function CatalogPage() {
   const { t, lang } = useI18n();
   const { products, addProduct, updateProduct, deleteProduct } = useProducts();
+  const { allCategoryKeys, customCategories } = useCustomCategories();
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState<Category | 'all'>('all');
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
+
+  const getCatLabel = (key: string) => {
+    const custom = customCategories.find(c => c.id === key);
+    if (custom) return lang === 'el' ? custom.name : (custom.nameEn || custom.name);
+    return t(key as any);
+  };
 
   const filtered = useMemo(() => {
     let list = products;
