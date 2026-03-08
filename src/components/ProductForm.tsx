@@ -19,7 +19,7 @@ interface Props {
   offImageUrl?: string;
 }
 
-export default function ProductForm({ open, onClose, onSave, product }: Props) {
+export default function ProductForm({ open, onClose, onSave, product, offImageUrl }: Props) {
   const { t, lang } = useI18n();
   const { customCategories, allCategoryKeys } = useCustomCategories();
   const { products } = useProducts();
