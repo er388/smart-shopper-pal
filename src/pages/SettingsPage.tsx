@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Globe, Moon, Store, Plus, Trash2 } from 'lucide-react';
+import { Globe, Moon, Store, Plus, Trash2, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useI18n } from '@/lib/i18n';
-import { useStores, useDarkMode } from '@/lib/useStore';
+import { useStores, useDarkMode, useTemplates } from '@/lib/useStore';
 import CategoryManager from '@/components/CategoryManager';
 import DataManager from '@/components/DataManager';
+import { toast } from '@/hooks/use-toast';
 
 export default function SettingsPage() {
   const { t, lang, setLang } = useI18n();
