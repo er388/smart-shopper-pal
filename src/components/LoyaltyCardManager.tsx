@@ -58,7 +58,7 @@ export default function LoyaltyCardManager() {
   const [cardName, setCardName] = useState('');
   const [cardStoreId, setCardStoreId] = useState('');
   const [cardNumber, setCardNumber] = useState('');
-  const [cardFormat, setCardFormat] = useState<BarcodeFormat>('EAN13');
+  const [cardFormat, setCardFormat] = useState<BarcodeFormat>('CODE128');
 
   const handleAdd = () => {
     if (!cardName.trim() || !cardNumber.trim()) return;
