@@ -1056,6 +1056,24 @@ export default function ShoppingListPage() {
         onAddAgain={handleDuplicateAddAgain}
       />
 
+      {/* Store Check Before Checkout */}
+      <Dialog open={storeCheckOpen} onOpenChange={setStoreCheckOpen}>
+        <DialogContent className="max-w-xs mx-auto rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base">{t('noStoreSelected')}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">{t('noStorePrompt')}</p>
+          <div className="space-y-2">
+            <Button className="w-full rounded-xl" variant="outline" onClick={() => { setStoreCheckOpen(false); }}>
+              {t('selectStoreOption')}
+            </Button>
+            <Button className="w-full rounded-xl" onClick={() => { setStoreCheckOpen(false); handleCompletePurchase(); }}>
+              {t('continueWithout')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Full-size image preview */}
       {fullImageSrc && (
         <div
