@@ -422,6 +422,7 @@ export default function ShoppingListPage() {
   const handleLoadTemplate = (templateId: string, mode: 'merge' | 'replace') => {
     const tpl = templates.find(t => t.id === templateId);
     if (!tpl) return;
+    const snapshot = [...rawItems];
     if (mode === 'replace') {
       clearAll();
       setTimeout(() => { tpl.items.forEach(i => addItem(i.productId, i.quantity, i.storeId)); }, 50);
@@ -430,6 +431,9 @@ export default function ShoppingListPage() {
     }
     setShowLoadTemplate(false);
     toast({ title: t('templateLoaded') });
+    showUndo(t('templateLoaded'), () => {
+      setAllItems(snapshot);
+    });
   };
 
   const renderItem = (item: typeof items[0]) => {
