@@ -253,6 +253,12 @@ export default function ShoppingListPage() {
     const checkedItems = items.filter(i => i.checked);
     if (checkedItems.length === 0) return;
 
+    // Check if store is selected
+    if (!activeStoreId && !storeCheckOpen) {
+      setStoreCheckOpen(true);
+      return;
+    }
+
     const storeIds = [...new Set(checkedItems.map(i => i.storeId).filter(Boolean))] as string[];
 
     addPurchase({
