@@ -102,7 +102,7 @@ export function useShoppingList() {
     setItems(prev => prev.map(i => {
       if (i.id !== id) return i;
       const checked = !i.checked;
-      return { ...i, checked, price: checked ? price : i.price, discount: checked ? discount : i.discount, checkedAt: checked ? new Date().toISOString() : undefined };
+      return { ...i, checked, price: checked ? (price ?? i.price) : i.price, discount: checked ? (discount ?? i.discount) : i.discount, checkedAt: checked ? new Date().toISOString() : undefined };
     }));
   }, [setItems]);
 
