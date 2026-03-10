@@ -400,6 +400,26 @@ const translations = {
     addAgain: 'Add again',
     // Smart uncheck
     smartUncheck: 'Auto-move on uncheck',
+    // Theme modes
+    themeMode: 'Appearance',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    themeBlack: 'AMOLED',
+    themeGreen: 'Green',
+    themeBlue: 'Blue',
+    // History delete
+    deleteEntry: 'Delete entry',
+    deleteEntryConfirm: 'Are you sure you want to delete this purchase from history?',
+    // Store check
+    noStoreSelected: 'No store selected',
+    noStorePrompt: 'Would you like to select a store or continue without one?',
+    selectStoreOption: 'Select store',
+    continueWithout: 'Continue without',
+    // Back button
+    exitConfirm: 'Do you want to close the app?',
+    // Startup page
+    startupPage: 'Startup page',
+    lastVisited: 'Last visited',
   },
 } as const;
 
