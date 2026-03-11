@@ -209,7 +209,6 @@ export function useCompletedPurchases() {
   const addPurchase = useCallback((purchase: Omit<CompletedPurchase, 'id'>) => {
     setPurchases(prev => {
       const updated = [...prev, { ...purchase, id: uid() }];
-      // Enforce history limit
       if (updated.length > historyLimit) {
         return updated.slice(updated.length - historyLimit);
       }
@@ -315,17 +314,18 @@ export function useLoyaltyCards() {
   return { cards, addCard, removeCard, setAllCards };
 }
 
-export type ThemeMode = 'light' | 'dark' | 'black' | 'green' | 'blue';
+export type ThemeMode = 'light' | 'dark' | 'black' | 'green' | 'blue' | 'red';
 
 export function useThemeMode() {
   const [theme, setTheme] = useLocalStorage<ThemeMode>('smartcart-theme', 'light');
   useEffect(() => {
     const cl = document.documentElement.classList;
-    cl.remove('dark', 'theme-black', 'theme-green', 'theme-blue');
+    cl.remove('dark', 'theme-black', 'theme-green', 'theme-blue', 'theme-red');
     if (theme === 'dark') cl.add('dark');
     else if (theme === 'black') { cl.add('dark'); cl.add('theme-black'); }
     else if (theme === 'green') { cl.add('dark'); cl.add('theme-green'); }
     else if (theme === 'blue') { cl.add('dark'); cl.add('theme-blue'); }
+    else if (theme === 'red') { cl.add('dark'); cl.add('theme-red'); }
   }, [theme]);
   return [theme, setTheme] as const;
 }

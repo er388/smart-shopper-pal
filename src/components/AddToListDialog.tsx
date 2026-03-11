@@ -1,11 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Minus, Check } from 'lucide-react';
+import { Search, Plus, Minus } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
 import { Product, CATEGORY_EMOJI, Category, CATEGORY_COLORS } from '@/lib/types';
 import { useCustomCategories } from '@/lib/useStore';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
@@ -34,7 +33,7 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
     return list.sort((a, b) => b.purchaseCount - a.purchaseCount);
   }, [products, filterCat, search]);
 
-  const handleToggle = (pid: string) => {
+  const handleToggle = useCallback((pid: string) => {
     const inList = existingProductIds.includes(pid);
     if (inList) {
       onRemove(pid);
@@ -44,19 +43,19 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
       setJustChanged(prev => new Map(prev).set(pid, 'added'));
     }
     setTimeout(() => setJustChanged(prev => { const n = new Map(prev); n.delete(pid); return n; }), 1200);
-  };
+  }, [existingProductIds, onAdd, onRemove]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-sm mx-auto rounded-2xl max-h-[85vh] !flex flex-col p-0 gap-0">
-        <DialogHeader className="px-5 pt-5 pb-3">
+        <DialogHeader className="px-5 pt-5 pb-3 shrink-0">
           <DialogTitle>{t('addToList')}</DialogTitle>
         </DialogHeader>
-        <div className="relative px-5 pb-3">
+        <div className="relative px-5 pb-3 shrink-0">
           <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('search')} className="pl-10" />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 shrink-0">
           <div className="flex gap-1.5 overflow-x-auto pb-3 no-scrollbar">
             <div className="shrink-0 w-5" aria-hidden />
             <button
@@ -77,7 +76,8 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
             <div className="shrink-0 w-5" aria-hidden />
           </div>
         </div>
-        <ScrollArea className="flex-1 px-5 pb-5">
+        {/* Scrollable product list using native scroll for mobile compatibility */}
+        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-5 min-h-0">
           <div className="space-y-1.5 py-1">
             <AnimatePresence>
               {filtered.map(p => {
@@ -131,7 +131,7 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
               })}
             </AnimatePresence>
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );

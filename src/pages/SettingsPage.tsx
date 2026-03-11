@@ -3,6 +3,7 @@ import { Globe, Palette, Store, Plus, Trash2, Bookmark, ArrowUpFromLine, Home } 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useI18n } from '@/lib/i18n';
 import { useStores, useThemeMode, useTemplates, ThemeMode } from '@/lib/useStore';
 import CategoryManager from '@/components/CategoryManager';
@@ -17,6 +18,7 @@ const THEME_OPTIONS: { value: ThemeMode; emoji: string }[] = [
   { value: 'black', emoji: '⬛' },
   { value: 'green', emoji: '🟢' },
   { value: 'blue', emoji: '🔵' },
+  { value: 'red', emoji: '🔴' },
 ];
 
 const STARTUP_PAGES = [
@@ -53,6 +55,9 @@ export default function SettingsPage() {
     localStorage.setItem('smartcart-startup-page', val);
   };
 
+  // Map startup page path back to select value
+  const startupSelectValue = startupPage === 'last' ? 'last' : (STARTUP_PAGES.find(sp => sp.path === startupPage)?.value || 'last');
+
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-24">
       <h1 className="text-2xl font-bold text-foreground mb-6">{t('settings')}</h1>
@@ -81,19 +86,19 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* Theme Mode - 5 options */}
+      {/* Theme Mode - 6 options */}
       <section className="mb-6">
         <div className="p-4 rounded-2xl bg-card border border-border">
           <div className="flex items-center gap-3 mb-3">
             <Palette size={20} className="text-primary" />
             <p className="text-sm font-medium text-foreground">{t('themeMode')}</p>
           </div>
-          <div className="flex gap-1.5">
+          <div className="grid grid-cols-3 gap-1.5">
             {THEME_OPTIONS.map(opt => (
               <button
                 key={opt.value}
                 onClick={() => setTheme(opt.value)}
-                className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl text-xs font-medium transition-colors ${
+                className={`flex flex-col items-center gap-1 py-2 rounded-xl text-xs font-medium transition-colors ${
                   theme === opt.value
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-secondary-foreground'
@@ -118,33 +123,34 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* Startup Page */}
+      {/* Startup Page - Dropdown */}
       <section className="mb-6">
         <div className="p-4 rounded-2xl bg-card border border-border">
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-3">
             <Home size={20} className="text-primary" />
-            <p className="text-sm font-medium text-foreground">{t('startupPage')}</p>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              onClick={() => handleStartupChange('last')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                startupPage === 'last' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
-              }`}
+            <p className="text-sm font-medium text-foreground flex-1">{t('startupPage')}</p>
+            <Select
+              value={startupSelectValue}
+              onValueChange={(val) => {
+                if (val === 'last') {
+                  handleStartupChange('last');
+                } else {
+                  const sp = STARTUP_PAGES.find(s => s.value === val);
+                  if (sp) handleStartupChange(sp.path);
+                }
+              }}
             >
-              {t('lastVisited')}
-            </button>
-            {STARTUP_PAGES.slice(1).map(sp => (
-              <button
-                key={sp.value}
-                onClick={() => handleStartupChange(sp.path)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  startupPage === sp.path ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
-                }`}
-              >
-                {t(sp.value as any)}
-              </button>
-            ))}
+              <SelectTrigger className="w-44 h-9 rounded-xl text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STARTUP_PAGES.map(sp => (
+                  <SelectItem key={sp.value} value={sp.value}>
+                    {sp.value === 'last' ? t('lastVisited') : t(sp.value as any)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </section>
