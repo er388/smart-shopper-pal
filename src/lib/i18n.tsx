@@ -198,6 +198,7 @@ const translations = {
     themeBlack: 'AMOLED',
     themeGreen: 'Πράσινο',
     themeBlue: 'Μπλε',
+    themeRed: 'Κόκκινο',
     // History delete
     deleteEntry: 'Διαγραφή εγγραφής',
     deleteEntryConfirm: 'Θέλετε να διαγράψετε αυτή την αγορά από το ιστορικό;',
@@ -407,6 +408,7 @@ const translations = {
     themeBlack: 'AMOLED',
     themeGreen: 'Green',
     themeBlue: 'Blue',
+    themeRed: 'Red',
     // History delete
     deleteEntry: 'Delete entry',
     deleteEntryConfirm: 'Are you sure you want to delete this purchase from history?',

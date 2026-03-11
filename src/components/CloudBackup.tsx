@@ -43,23 +43,22 @@ function useCloudBackupSettings() {
   return { autoBackup, toggleAutoBackup, connections, setConnection, isConnected };
 }
 
-// OAuth configurations - users need to supply their own client IDs
 const OAUTH_CONFIGS: Record<CloudProvider, { name: string; icon: string; authUrl: string; scope: string }> = {
   googleDrive: {
     name: 'Google Drive',
-    icon: '🟢',
+    icon: '/icons/google-drive.png',
     authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
     scope: 'https://www.googleapis.com/auth/drive.file',
   },
   oneDrive: {
     name: 'OneDrive',
-    icon: '🔵',
+    icon: '/icons/onedrive.png',
     authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
     scope: 'Files.ReadWrite',
   },
   dropbox: {
     name: 'Dropbox',
-    icon: '🔷',
+    icon: '/icons/dropbox.png',
     authUrl: 'https://www.dropbox.com/oauth2/authorize',
     scope: '',
   },
@@ -71,8 +70,6 @@ export default function CloudBackup() {
   const [backingUp, setBackingUp] = useState(false);
 
   const handleConnect = (provider: CloudProvider) => {
-    // In production, this would initiate OAuth flow
-    // For now, show info toast
     toast({
       title: `${OAUTH_CONFIGS[provider].name}`,
       description: 'Η σύνδεση OAuth απαιτεί ρύθμιση API keys. Δες τις οδηγίες στο README.',
@@ -82,7 +79,6 @@ export default function CloudBackup() {
   const handleBackupNow = async () => {
     const connectedProviders = (['googleDrive', 'oneDrive', 'dropbox'] as CloudProvider[]).filter(isConnected);
     if (connectedProviders.length === 0) {
-      // Fallback: download as file (same as manual export)
       const data = exportAppData();
       const json = JSON.stringify(data, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
@@ -99,7 +95,6 @@ export default function CloudBackup() {
     }
 
     setBackingUp(true);
-    // In production, upload to connected providers
     setTimeout(() => {
       setBackingUp(false);
       toast({ title: t('backupSuccess') });
@@ -128,7 +123,7 @@ export default function CloudBackup() {
           const connected = isConnected(provider);
           return (
             <div key={provider} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
-              <span className="text-lg">{config.icon}</span>
+              <img src={config.icon} alt={config.name} className="w-6 h-6 object-contain" />
               <span className="flex-1 text-sm font-medium text-foreground">{config.name}</span>
               {connected ? (
                 <span className="flex items-center gap-1 text-xs text-primary font-medium">

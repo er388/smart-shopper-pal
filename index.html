@@ -9,9 +9,9 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#267a52" />
-    <meta name="author" content="Lovable" />
+    <meta name="application-name" content="Pson.io" />
+    <meta name="apple-mobile-web-app-title" content="Pson.io" />
 
-    <!-- TODO: Update og:title to match your application name -->
     <meta property="og:title" content="Pson.io - Λίστα Ψωνιών" />
     <meta property="og:description" content="Έξυπνη λίστα ψωνιών με παρακολούθηση τιμών" />
     <meta property="og:type" content="website" />
@@ -33,6 +33,7 @@
           else if (t === 'black') { cl.add('dark'); cl.add('theme-black'); }
           else if (t === 'green') { cl.add('dark'); cl.add('theme-green'); }
           else if (t === 'blue') { cl.add('dark'); cl.add('theme-blue'); }
+          else if (t === 'red') { cl.add('dark'); cl.add('theme-red'); }
           // Legacy fallback
           else if (t === true || localStorage.getItem('smartcart-dark') === 'true') cl.add('dark');
         } catch(e) {}
