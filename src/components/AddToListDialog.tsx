@@ -47,7 +47,7 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm mx-auto rounded-2xl max-h-[85vh] !flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-sm mx-auto rounded-2xl max-h-[85vh] !flex flex-col p-0 gap-0" style={{ WebkitOverflowScrolling: 'touch' }}>
         <DialogHeader className="px-5 pt-5 pb-3 shrink-0">
           <DialogTitle>{t('addToList')}</DialogTitle>
         </DialogHeader>
@@ -77,7 +77,7 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
           </div>
         </div>
         {/* Scrollable product list using native scroll for mobile compatibility */}
-        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-5 min-h-0">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-5 min-h-0 touch-pan-y" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="space-y-1.5 py-1">
             <AnimatePresence>
               {filtered.map(p => {
