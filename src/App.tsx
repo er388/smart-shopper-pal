@@ -18,9 +18,9 @@ import { useState, useEffect, useCallback } from "react";
 const queryClient = new QueryClient();
 
 function StartupRedirect() {
-  const startupPage = localStorage.getItem('smartcart-startup-page') || 'last';
+  const startupPage = localStorage.getItem('Pson-startup-page') || 'last';
   if (startupPage === 'last') {
-    const lastPage = localStorage.getItem('smartcart-last-page') || '/';
+    const lastPage = localStorage.getItem('Pson-last-page') || '/';
     return <Navigate to={lastPage} replace />;
   }
   return <Navigate to={startupPage} replace />;
@@ -29,7 +29,7 @@ function StartupRedirect() {
 function RouteTracker({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   useEffect(() => {
-    localStorage.setItem('smartcart-last-page', location.pathname);
+    localStorage.setItem('Pson-last-page', location.pathname);
   }, [location.pathname]);
   return <>{children}</>;
 }
@@ -61,14 +61,14 @@ function BackButtonHandler({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4" onClick={() => setShowExitDialog(false)}>
           <div className="bg-card rounded-2xl p-6 max-w-xs w-full shadow-xl border border-border" onClick={e => e.stopPropagation()}>
             <p className="text-sm font-medium text-foreground mb-4 text-center">
-              {localStorage.getItem('smartcart-lang') === 'en' ? 'Do you want to close the app?' : 'Θέλετε να κλείσετε την εφαρμογή;'}
+              {localStorage.getItem('Pson-lang') === 'en' ? 'Do you want to close the app?' : 'Θέλετε να κλείσετε την εφαρμογή;'}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowExitDialog(false)}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-secondary text-secondary-foreground text-sm font-medium"
               >
-                {localStorage.getItem('smartcart-lang') === 'en' ? 'No' : 'Όχι'}
+                {localStorage.getItem('Pson-lang') === 'en' ? 'No' : 'Όχι'}
               </button>
               <button
                 onClick={() => {
@@ -81,7 +81,7 @@ function BackButtonHandler({ children }: { children: React.ReactNode }) {
                 }}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium"
               >
-                {localStorage.getItem('smartcart-lang') === 'en' ? 'Yes' : 'Ναι'}
+                {localStorage.getItem('Pson-lang') === 'en' ? 'Yes' : 'Ναι'}
               </button>
             </div>
           </div>

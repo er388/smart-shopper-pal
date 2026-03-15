@@ -16,24 +16,24 @@ interface CloudConnection {
 
 function useCloudBackupSettings() {
   const [autoBackup, setAutoBackup] = useState(() => {
-    return localStorage.getItem('smartcart-auto-backup') === 'true';
+    return localStorage.getItem('Pson-auto-backup') === 'true';
   });
   const [connections, setConnections] = useState<CloudConnection[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem('smartcart-cloud-connections') || '[]');
+      return JSON.parse(localStorage.getItem('Pson-cloud-connections') || '[]');
     } catch { return []; }
   });
 
   const toggleAutoBackup = (val: boolean) => {
     setAutoBackup(val);
-    localStorage.setItem('smartcart-auto-backup', String(val));
+    localStorage.setItem('Pson-auto-backup', String(val));
   };
 
   const setConnection = (provider: CloudProvider, connected: boolean, token?: string) => {
     setConnections(prev => {
       const next = prev.filter(c => c.provider !== provider);
       next.push({ provider, connected, token });
-      localStorage.setItem('smartcart-cloud-connections', JSON.stringify(next));
+      localStorage.setItem('Pson-cloud-connections', JSON.stringify(next));
       return next;
     });
   };

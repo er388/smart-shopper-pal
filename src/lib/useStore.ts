@@ -47,7 +47,7 @@ const DEFAULT_STORES: Store[] = [
 ];
 
 export function useProducts() {
-  const [products, setProducts] = useLocalStorage<Product[]>('smartcart-products', DEFAULT_PRODUCTS);
+  const [products, setProducts] = useLocalStorage<Product[]>('Pson-products', DEFAULT_PRODUCTS);
 
   const addProduct = useCallback((p: Omit<Product, 'id' | 'purchaseCount'>) => {
     const newP: Product = { ...p, id: uid(), purchaseCount: 0, unit: p.unit || 'τεμ.' };
@@ -79,8 +79,8 @@ export function useProducts() {
 }
 
 export function useShoppingList() {
-  const [items, setItems] = useLocalStorage<ShoppingItem[]>('smartcart-list', []);
-  const [activeStoreId, setActiveStoreId] = useLocalStorage<string | null>('smartcart-active-store', null);
+  const [items, setItems] = useLocalStorage<ShoppingItem[]>('Pson-list', []);
+  const [activeStoreId, setActiveStoreId] = useLocalStorage<string | null>('Pson-active-store', null);
 
   const addItem = useCallback((productId: string, quantity = 1, storeId?: string | null) => {
     setItems(prev => {
@@ -169,7 +169,7 @@ export function useShoppingList() {
 }
 
 export function useStores() {
-  const [stores, setStores] = useLocalStorage<Store[]>('smartcart-stores', DEFAULT_STORES);
+  const [stores, setStores] = useLocalStorage<Store[]>('Pson-stores', DEFAULT_STORES);
 
   const addStore = useCallback((name: string) => {
     const s: Store = { id: uid(), name };
@@ -189,7 +189,7 @@ export function useStores() {
 }
 
 export function usePurchaseHistory() {
-  const [history, setHistory] = useLocalStorage<PurchaseRecord[]>('smartcart-history', []);
+  const [history, setHistory] = useLocalStorage<PurchaseRecord[]>('Pson-history', []);
 
   const addRecord = useCallback((record: Omit<PurchaseRecord, 'id'>) => {
     setHistory(prev => [...prev, { ...record, id: uid() }]);
@@ -203,8 +203,8 @@ export function usePurchaseHistory() {
 }
 
 export function useCompletedPurchases() {
-  const [purchases, setPurchases] = useLocalStorage<CompletedPurchase[]>('smartcart-completed-purchases', []);
-  const [historyLimit, setHistoryLimit] = useLocalStorage<number>('smartcart-history-limit', 50);
+  const [purchases, setPurchases] = useLocalStorage<CompletedPurchase[]>('Pson-completed-purchases', []);
+  const [historyLimit, setHistoryLimit] = useLocalStorage<number>('Pson-history-limit', 50);
 
   const addPurchase = useCallback((purchase: Omit<CompletedPurchase, 'id'>) => {
     setPurchases(prev => {
@@ -228,7 +228,7 @@ export function useCompletedPurchases() {
 }
 
 export function useTemplates() {
-  const [templates, setTemplates] = useLocalStorage<ListTemplate[]>('smartcart-templates', []);
+  const [templates, setTemplates] = useLocalStorage<ListTemplate[]>('Pson-templates', []);
 
   const addTemplate = useCallback((name: string, items: { productId: string; quantity: number; storeId?: string | null }[]) => {
     const t: ListTemplate = { id: uid(), name, items, createdAt: new Date().toISOString() };
@@ -248,12 +248,12 @@ export function useTemplates() {
 }
 
 export function useCustomCategories() {
-  const [categories, setCategories] = useLocalStorage<CustomCategory[]>('smartcart-custom-categories', []);
+  const [categories, setCategories] = useLocalStorage<CustomCategory[]>('Pson-custom-categories', []);
   const [defaultCategoryOverrides, setDefaultCategoryOverrides] = useLocalStorage<
     Partial<Record<DefaultCategory, { name: string; nameEn?: string }>>
-  >('smartcart-default-category-overrides', {});
+  >('Pson-default-category-overrides', {});
   const [hiddenDefaultCategories, setHiddenDefaultCategories] = useLocalStorage<DefaultCategory[]>(
-    'smartcart-hidden-default-categories',
+    'Pson-hidden-default-categories',
     [],
   );
 
@@ -271,7 +271,7 @@ export function useCustomCategories() {
   }, [categories]);
 
   useEffect(() => {
-    window.dispatchEvent(new Event('smartcart-category-overrides-updated'));
+    window.dispatchEvent(new Event('Pson-category-overrides-updated'));
   }, [defaultCategoryOverrides]);
 
   const addCategory = useCallback((cat: Omit<CustomCategory, 'id'>) => {
@@ -327,7 +327,7 @@ export function useCustomCategories() {
 }
 
 export function useBudget() {
-  const [budget, setBudget] = useLocalStorage<Budget | null>('smartcart-budget', null);
+  const [budget, setBudget] = useLocalStorage<Budget | null>('Pson-budget', null);
 
   const clearBudget = useCallback(() => {
     setBudget(null);
@@ -337,7 +337,7 @@ export function useBudget() {
 }
 
 export function useLoyaltyCards() {
-  const [cards, setCards] = useLocalStorage<LoyaltyCard[]>('smartcart-loyalty-cards', []);
+  const [cards, setCards] = useLocalStorage<LoyaltyCard[]>('Pson-loyalty-cards', []);
 
   const addCard = useCallback((card: Omit<LoyaltyCard, 'id'>) => {
     setCards(prev => [...prev, { ...card, id: uid() }]);
@@ -357,7 +357,7 @@ export function useLoyaltyCards() {
 export type ThemeMode = 'light' | 'dark' | 'black' | 'green' | 'blue' | 'red';
 
 export function useThemeMode() {
-  const [theme, setTheme] = useLocalStorage<ThemeMode>('smartcart-theme', 'light');
+  const [theme, setTheme] = useLocalStorage<ThemeMode>('Pson-theme', 'light');
   useEffect(() => {
     const cl = document.documentElement.classList;
     cl.remove('dark', 'theme-black', 'theme-green', 'theme-blue', 'theme-red');
@@ -389,27 +389,27 @@ export function exportAppData(): AppData {
     try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
   };
   return {
-    products: get('smartcart-products') || [],
-    shoppingList: get('smartcart-list') || [],
-    stores: get('smartcart-stores') || [],
-    purchaseHistory: get('smartcart-history') || [],
-    completedPurchases: get('smartcart-completed-purchases') || [],
-    customCategories: get('smartcart-custom-categories') || [],
-    activeStoreId: get('smartcart-active-store'),
-    templates: get('smartcart-templates') || [],
+    products: get('Pson-products') || [],
+    shoppingList: get('Pson-list') || [],
+    stores: get('Pson-stores') || [],
+    purchaseHistory: get('Pson-history') || [],
+    completedPurchases: get('Pson-completed-purchases') || [],
+    customCategories: get('Pson-custom-categories') || [],
+    activeStoreId: get('Pson-active-store'),
+    templates: get('Pson-templates') || [],
   };
 }
 
 export function importAppData(data: AppData) {
-  localStorage.setItem('smartcart-products', JSON.stringify(data.products || []));
-  localStorage.setItem('smartcart-list', JSON.stringify(data.shoppingList || []));
-  localStorage.setItem('smartcart-stores', JSON.stringify(data.stores || []));
-  localStorage.setItem('smartcart-history', JSON.stringify(data.purchaseHistory || []));
-  localStorage.setItem('smartcart-completed-purchases', JSON.stringify(data.completedPurchases || []));
-  localStorage.setItem('smartcart-custom-categories', JSON.stringify(data.customCategories || []));
-  localStorage.setItem('smartcart-templates', JSON.stringify(data.templates || []));
+  localStorage.setItem('Pson-products', JSON.stringify(data.products || []));
+  localStorage.setItem('Pson-list', JSON.stringify(data.shoppingList || []));
+  localStorage.setItem('Pson-stores', JSON.stringify(data.stores || []));
+  localStorage.setItem('Pson-history', JSON.stringify(data.purchaseHistory || []));
+  localStorage.setItem('Pson-completed-purchases', JSON.stringify(data.completedPurchases || []));
+  localStorage.setItem('Pson-custom-categories', JSON.stringify(data.customCategories || []));
+  localStorage.setItem('Pson-templates', JSON.stringify(data.templates || []));
   if (data.activeStoreId !== undefined) {
-    localStorage.setItem('smartcart-active-store', JSON.stringify(data.activeStoreId));
+    localStorage.setItem('Pson-active-store', JSON.stringify(data.activeStoreId));
   }
 }
 

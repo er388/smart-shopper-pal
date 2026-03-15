@@ -37,10 +37,10 @@ export default function SettingsPage() {
   const [newStore, setNewStore] = useState('');
   const { templates, removeTemplate } = useTemplates();
   const [smartUncheck, setSmartUncheck] = useState(() => {
-    try { return localStorage.getItem('smartcart-smart-uncheck') !== 'false'; } catch { return true; }
+    try { return localStorage.getItem('Pson-smart-uncheck') !== 'false'; } catch { return true; }
   });
   const [startupPage, setStartupPage] = useState(() => {
-    try { return localStorage.getItem('smartcart-startup-page') || 'last'; } catch { return 'last'; }
+    try { return localStorage.getItem('Pson-startup-page') || 'last'; } catch { return 'last'; }
   });
 
   const handleAddStore = () => {
@@ -52,7 +52,7 @@ export default function SettingsPage() {
 
   const handleStartupChange = (val: string) => {
     setStartupPage(val);
-    localStorage.setItem('smartcart-startup-page', val);
+    localStorage.setItem('Pson-startup-page', val);
   };
 
   // Map startup page path back to select value
@@ -115,7 +115,7 @@ export default function SettingsPage() {
           <div className="flex-1">
             <p className="text-sm font-medium text-foreground">{t('smartUncheck')}</p>
           </div>
-          <Switch checked={smartUncheck} onCheckedChange={(v) => { setSmartUncheck(v); localStorage.setItem('smartcart-smart-uncheck', String(v)); }} />
+          <Switch checked={smartUncheck} onCheckedChange={(v) => { setSmartUncheck(v); localStorage.setItem('Pson-smart-uncheck', String(v)); }} />
         </div>
       </section>
 

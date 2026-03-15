@@ -160,7 +160,7 @@ Check that `android/app/src/main/res/values/strings.xml` contains:
 <string name="custom_url_scheme">io.pson.app</string>
 ```
 
-If it still says "SmartCart", update it manually.
+If it still says "Pson", update it manually.
 
 ---
 

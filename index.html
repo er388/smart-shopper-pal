@@ -16,11 +16,11 @@
     <meta property="og:title" content="Pson.io - Λίστα Ψωνιών" />
     <meta property="og:description" content="Έξυπνη λίστα ψωνιών με παρακολούθηση τιμών" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:image" content="https://pson.dev/opengraph-image-p98pqg.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:site" content="@pson" />
+    <meta name="twitter:image" content="https://pson.dev/opengraph-image-p98pqg.png" />
   </head>
 
   <body>
@@ -28,7 +28,7 @@
       // Apply theme before first paint to prevent flash
       (function(){
         try {
-          var t = JSON.parse(localStorage.getItem('smartcart-theme') || '"light"');
+          var t = JSON.parse(localStorage.getItem('Pson-theme') || '"light"');
           var cl = document.documentElement.classList;
           if (t === 'dark') cl.add('dark');
           else if (t === 'black') { cl.add('dark'); cl.add('theme-black'); }
@@ -36,7 +36,7 @@
           else if (t === 'blue') { cl.add('dark'); cl.add('theme-blue'); }
           else if (t === 'red') { cl.add('dark'); cl.add('theme-red'); }
           // Legacy fallback
-          else if (t === true || localStorage.getItem('smartcart-dark') === 'true') cl.add('dark');
+          else if (t === true || localStorage.getItem('Pson-dark') === 'true') cl.add('dark');
         } catch(e) {}
       })();
     </script>

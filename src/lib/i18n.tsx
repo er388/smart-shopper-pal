@@ -437,36 +437,36 @@ const I18nContext = createContext<I18nContextType | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>(() => {
-    const saved = localStorage.getItem('smartcart-lang');
+    const saved = localStorage.getItem('Pson-lang');
     return (saved as Lang) || 'el';
   });
   const [defaultCategoryOverrides, setDefaultCategoryOverrides] = useState<Record<string, { name: string; nameEn?: string }>>(() => {
     try {
-      return JSON.parse(localStorage.getItem('smartcart-default-category-overrides') || '{}');
+      return JSON.parse(localStorage.getItem('Pson-default-category-overrides') || '{}');
     } catch {
       return {};
     }
   });
 
   useEffect(() => {
-    localStorage.setItem('smartcart-lang', lang);
+    localStorage.setItem('Pson-lang', lang);
   }, [lang]);
 
   useEffect(() => {
     const syncOverrides = () => {
       try {
-        setDefaultCategoryOverrides(JSON.parse(localStorage.getItem('smartcart-default-category-overrides') || '{}'));
+        setDefaultCategoryOverrides(JSON.parse(localStorage.getItem('Pson-default-category-overrides') || '{}'));
       } catch {
         setDefaultCategoryOverrides({});
       }
     };
 
     window.addEventListener('storage', syncOverrides);
-    window.addEventListener('smartcart-category-overrides-updated', syncOverrides);
+    window.addEventListener('Pson-category-overrides-updated', syncOverrides);
 
     return () => {
       window.removeEventListener('storage', syncOverrides);
-      window.removeEventListener('smartcart-category-overrides-updated', syncOverrides);
+      window.removeEventListener('Pson-category-overrides-updated', syncOverrides);
     };
   }, []);
 

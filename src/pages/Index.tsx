@@ -75,16 +75,16 @@ export default function ShoppingListPage() {
 
   // Smart uncheck setting
   const [smartUncheck, setSmartUncheck] = useState(() => {
-    try { return localStorage.getItem('smartcart-smart-uncheck') !== 'false'; } catch { return true; }
+    try { return localStorage.getItem('Pson-smart-uncheck') !== 'false'; } catch { return true; }
   });
 
   // Sort mode with persistence
   const [sortMode, setSortMode] = useState<SortMode>(() => {
-    try { return (localStorage.getItem('smartcart-sort-mode') as SortMode) || 'category'; } catch { return 'category'; }
+    try { return (localStorage.getItem('Pson-sort-mode') as SortMode) || 'category'; } catch { return 'category'; }
   });
   const handleSortChange = (mode: SortMode) => {
     setSortMode(mode);
-    localStorage.setItem('smartcart-sort-mode', mode);
+    localStorage.setItem('Pson-sort-mode', mode);
   };
 
   const getProduct = (pid: string) => products.find(p => p.id === pid);
