@@ -1,4 +1,4 @@
-package app.lovable.smartcart;
+package io.pson.app;
 
 import com.getcapacitor.BridgeActivity;
 
