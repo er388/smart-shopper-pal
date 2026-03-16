@@ -61,6 +61,7 @@ export default function AddToListDialog({ open, onClose, products, existingProdu
           <DialogTitle>{t('addToList')}</DialogTitle>
         </DialogHeader>
         <div className="relative px-5 pb-3 shrink-0">
+          <span tabIndex={0} className="sr-only" aria-hidden />
           <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('search')} className="pl-10" />
         </div>

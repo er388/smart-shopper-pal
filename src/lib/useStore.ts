@@ -204,7 +204,7 @@ export function usePurchaseHistory() {
 
 export function useCompletedPurchases() {
   const [purchases, setPurchases] = useLocalStorage<CompletedPurchase[]>('Pson-completed-purchases', []);
-  const [historyLimit, setHistoryLimit] = useLocalStorage<number>('Pson-history-limit', 50);
+  const [historyLimit, setHistoryLimit] = useLocalStorage<number>('Pson-history-limit', 1000);
 
   const addPurchase = useCallback((purchase: Omit<CompletedPurchase, 'id'>) => {
     setPurchases(prev => {

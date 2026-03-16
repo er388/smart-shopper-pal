@@ -25,7 +25,7 @@ export default function HistoryPage() {
   const { t, lang } = useI18n();
   const { products } = useProducts();
   const { stores } = useStores();
-  const { purchases, removePurchase, historyLimit, setHistoryLimit } = useCompletedPurchases();
+  const { purchases, removePurchase, historyLimit } = useCompletedPurchases();
   const { addItem, clearAll, rawItems } = useShoppingList();
   const { addTemplate } = useTemplates();
 
@@ -148,18 +148,6 @@ export default function HistoryPage() {
       {/* History limit info */}
       <div className="flex items-center justify-between mb-4 px-1">
         <span className="text-xs text-muted-foreground">{filtered.length} / {purchases.length} {t('listsKept')}</span>
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">{t('historyLimit')}:</span>
-          <select
-            value={historyLimit}
-            onChange={e => setHistoryLimit(Number(e.target.value))}
-            className="text-xs bg-secondary rounded-lg px-2 py-1 text-foreground border-none outline-none"
-          >
-            {[20, 30, 50, 100].map(n => (
-              <option key={n} value={n}>{n}</option>
-            ))}
-          </select>
-        </div>
       </div>
 
       {/* Purchase cards */}

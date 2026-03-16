@@ -1,7 +1,8 @@
-import { ReactNode, useMemo, useCallback } from 'react';
+import { ReactNode, useMemo, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Package, Settings, BarChart3, Clock } from 'lucide-react';
 import { useI18n } from '@/lib/i18n';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const tabs = [
   { path: '/', icon: ShoppingCart, labelKey: 'shoppingList' as const },
@@ -15,21 +16,60 @@ export default function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useI18n();
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const prevIndex = useRef(0);
 
   const activeIndex = useMemo(() => {
     const idx = tabs.findIndex(tab => tab.path === location.pathname);
     return idx >= 0 ? idx : 0;
   }, [location.pathname]);
 
+  const direction = activeIndex > prevIndex.current ? 1 : -1;
+  prevIndex.current = activeIndex;
+
   const handleNav = useCallback((path: string) => {
     navigate(path);
   }, [navigate]);
 
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, []);
+
+  const onTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStart.current) return;
+    const dx = e.changedTouches[0].clientX - touchStart.current.x;
+    const dy = e.changedTouches[0].clientY - touchStart.current.y;
+    touchStart.current = null;
+
+    if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx) * 0.8) return;
+
+    if (dx < 0 && activeIndex < tabs.length - 1) {
+      navigate(tabs[activeIndex + 1].path);
+    } else if (dx > 0 && activeIndex > 0) {
+      navigate(tabs[activeIndex - 1].path);
+    }
+  }, [activeIndex, navigate]);
+
   return (
-    <div className="flex flex-col h-[100dvh] bg-background">
-      <main className="flex-1 overflow-y-auto pb-20">
-        {children}
-      </main>
+    <div className="flex flex-col h-[100dvh] bg-background overflow-hidden">
+      <div className="flex-1 relative overflow-hidden">
+        <AnimatePresence initial={false} custom={direction} mode="popLayout">
+          <motion.main
+            key={location.pathname}
+            custom={direction}
+            initial={{ x: direction * 100 + '%' }}
+            animate={{ x: 0 }}
+            exit={{ x: direction * -100 + '%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+            className="absolute inset-0 overflow-y-auto pb-20"
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+          >
+            {children}
+          </motion.main>
+        </AnimatePresence>
+      </div>
+
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border backdrop-blur-lg bg-opacity-95 z-50">
         <div className="relative max-w-lg mx-auto">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-1 overflow-hidden">
@@ -43,7 +83,6 @@ export default function Layout({ children }: { children: ReactNode }) {
               <div className="mx-auto h-full w-8 rounded-full bg-primary" />
             </div>
           </div>
-
           <div
             className="grid items-center h-16"
             style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
@@ -56,10 +95,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                   onClick={() => handleNav(tab.path)}
                   className="relative flex w-full flex-col items-center gap-0.5 px-1 py-2 transition-colors"
                 >
-                  <tab.icon
-                    size={18}
-                    className={active ? 'text-primary' : 'text-muted-foreground'}
-                  />
+                  <tab.icon size={18} className={active ? 'text-primary' : 'text-muted-foreground'} />
                   <span className={`text-[9px] font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}>
                     {t(tab.labelKey)}
                   </span>

@@ -610,19 +610,19 @@ export default function ShoppingListPage() {
     <div className="max-w-lg mx-auto">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-2xl font-bold text-foreground">{t('shoppingList')}</h1>
-          <div className="flex items-center gap-1.5">
+        <div className="mb-3">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-2xl font-bold text-foreground">{t('shoppingList')}</h1>
             {totalCount > 0 && (
-              <span className="text-sm text-muted-foreground font-medium mr-1">
+              <span className="text-sm text-muted-foreground font-medium">
                 {checkedCount}/{totalCount}
               </span>
             )}
-            {/* Budget button */}
+          </div>
+          <div className="flex items-center gap-1.5">
             <button onClick={openBudgetModal} className={`w-9 h-9 rounded-xl flex items-center justify-center hover:bg-secondary transition-colors ${budget ? 'text-primary' : 'text-muted-foreground'}`} title={t('budget')}>
               <Wallet size={18} />
             </button>
-            {/* Barcode scanner */}
             <button onClick={() => setScannerOpen(true)} className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-secondary transition-colors" title={t('scanBarcode')}>
               <ScanLine size={18} className="text-muted-foreground" />
             </button>

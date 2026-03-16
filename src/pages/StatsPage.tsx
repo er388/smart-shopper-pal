@@ -128,7 +128,7 @@ export default function StatsPage() {
       {/* Period filter - first row with icon */}
       <div className="flex items-center gap-2 mb-3">
         <Calendar size={14} className="text-muted-foreground shrink-0" />
-        {(['week', 'month', 'all'] as Period[]).map(p => (
+        {(['all', 'week', 'month'] as Period[]).map(p => (
           <button
             key={p}
             onClick={() => setPeriod(p)}

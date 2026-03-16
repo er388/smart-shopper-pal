@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Globe, Palette, Store, Plus, Trash2, Bookmark, ArrowUpFromLine, Home } from 'lucide-react';
+import { Globe, Palette, Store, Plus, Trash2, Bookmark, ArrowUpFromLine, Home, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -11,6 +11,7 @@ import DataManager from '@/components/DataManager';
 import CloudBackup from '@/components/CloudBackup';
 import LoyaltyCardManager from '@/components/LoyaltyCardManager';
 import { toast } from '@/hooks/use-toast';
+import { useCompletedPurchases } from '@/lib/useStore';
 
 const THEME_OPTIONS: { value: ThemeMode; emoji: string }[] = [
   { value: 'light', emoji: '☀️' },
@@ -36,6 +37,7 @@ export default function SettingsPage() {
   const [theme, setTheme] = useThemeMode();
   const [newStore, setNewStore] = useState('');
   const { templates, removeTemplate } = useTemplates();
+  const { historyLimit, setHistoryLimit } = useCompletedPurchases();
   const [smartUncheck, setSmartUncheck] = useState(() => {
     try { return localStorage.getItem('Pson-smart-uncheck') !== 'false'; } catch { return true; }
   });
@@ -116,6 +118,29 @@ export default function SettingsPage() {
             <p className="text-sm font-medium text-foreground">{t('smartUncheck')}</p>
           </div>
           <Switch checked={smartUncheck} onCheckedChange={(v) => { setSmartUncheck(v); localStorage.setItem('Pson-smart-uncheck', String(v)); }} />
+        </div>
+      </section>
+
+      {/* History Limit */}
+      <section className="mb-6">
+        <div className="p-4 rounded-2xl bg-card border border-border">
+          <div className="flex items-center gap-3">
+            <Clock size={20} className="text-primary" />
+            <p className="text-sm font-medium text-foreground flex-1">{t('historyLimit')}</p>
+            <Select
+              value={String(historyLimit)}
+              onValueChange={v => setHistoryLimit(Number(v))}
+            >
+              <SelectTrigger className="w-24 h-9 rounded-xl text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[100, 200, 500, 1000].map(n => (
+                  <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </section>
 
