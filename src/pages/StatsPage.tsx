@@ -229,7 +229,8 @@ export default function StatsPage() {
                     </Pie>
                     <Tooltip
                       contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 12, fontSize: 12 }}
-                      formatter={(value: number) => [formatPrice(value)]}
+                      formatter={(value: number, name: string) => [formatPrice(value), name]}
+                      itemStyle={{ color: 'hsl(var(--foreground))' }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
