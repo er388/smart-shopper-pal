@@ -167,7 +167,8 @@ export default function HistoryPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="p-4 rounded-2xl bg-card border border-border shadow-sm"
+                onClick={() => setDetailPurchase(purchase)}
+                className="p-4 rounded-2xl bg-card border border-border shadow-sm cursor-pointer active:scale-[0.99] transition-transform"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
@@ -176,12 +177,6 @@ export default function HistoryPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold text-primary">{formatPrice(purchase.total)}</span>
-                    <button
-                      onClick={() => setDeleteTarget(purchase)}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                    >
-                      <Trash2 size={15} />
-                    </button>
                   </div>
                 </div>
 
@@ -201,15 +196,18 @@ export default function HistoryPage() {
                 </div>
 
                 <div className="flex gap-1.5">
-                  <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg flex-1" onClick={() => setDetailPurchase(purchase)}>
-                    <Eye size={13} className="mr-1" /> {t('viewDetails')}
-                  </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg flex-1" onClick={() => setReloadPurchase(purchase)}>
+                  <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg flex-1" onClick={e => { e.stopPropagation(); setReloadPurchase(purchase); }}>
                     <RotateCcw size={13} className="mr-1" /> {t('reloadList')}
                   </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg" onClick={() => { setSaveTemplateFrom(purchase); setSaveTemplateName(''); }}>
+                  <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg" onClick={e => { e.stopPropagation(); setSaveTemplateFrom(purchase); setSaveTemplateName(''); }}>
                     <Bookmark size={13} />
                   </Button>
+                  <button
+                    onClick={e => { e.stopPropagation(); setDeleteTarget(purchase); }}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </motion.div>
             ))}

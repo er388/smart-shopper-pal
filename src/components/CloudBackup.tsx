@@ -5,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { useI18n } from '@/lib/i18n';
 import { exportAppData, importAppData } from '@/lib/useStore';
 import { toast } from '@/hooks/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 type CloudProvider = 'googleDrive' | 'oneDrive' | 'dropbox';
 
@@ -38,9 +39,17 @@ function useCloudBackupSettings() {
     });
   };
 
+    const disconnect = (provider: CloudProvider) => {
+    setConnections(prev => {
+      const next = prev.filter(c => c.provider !== provider);
+      localStorage.setItem('Pson-cloud-connections', JSON.stringify(next));
+      return next;
+    });
+  };
+
   const isConnected = (provider: CloudProvider) => connections.find(c => c.provider === provider)?.connected || false;
 
-  return { autoBackup, toggleAutoBackup, connections, setConnection, isConnected };
+  return { autoBackup, toggleAutoBackup, connections, setConnection, isConnected, disconnect };
 }
 
 const OAUTH_CONFIGS: Record<CloudProvider, { name: string; icon: string; authUrl: string; scope: string }> = {
@@ -66,7 +75,8 @@ const OAUTH_CONFIGS: Record<CloudProvider, { name: string; icon: string; authUrl
 
 export default function CloudBackup() {
   const { t } = useI18n();
-  const { autoBackup, toggleAutoBackup, isConnected } = useCloudBackupSettings();
+  const { autoBackup, toggleAutoBackup, isConnected, disconnect } = useCloudBackupSettings();
+  const [disconnectTarget, setDisconnectTarget] = useState<CloudProvider | null>(null);
   const [backingUp, setBackingUp] = useState(false);
 
   const handleConnect = (provider: CloudProvider) => {
@@ -126,9 +136,19 @@ export default function CloudBackup() {
               <img src={config.icon} alt={config.name} className="w-6 h-6 object-contain" />
               <span className="flex-1 text-sm font-medium text-foreground">{config.name}</span>
               {connected ? (
-                <span className="flex items-center gap-1 text-xs text-primary font-medium">
-                  <Check size={14} /> {t('connected')}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="flex items-center gap-1 text-xs text-primary font-medium">
+                    <Check size={14} /> {t('connected')}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs rounded-lg text-destructive hover:bg-destructive/10"
+                    onClick={() => setDisconnectTarget(provider)}
+                  >
+                    Αποσύνδεση
+                  </Button>
+                </div>
               ) : (
                 <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg" onClick={() => handleConnect(provider)}>
                   {t('connect')}
@@ -172,6 +192,32 @@ export default function CloudBackup() {
           </div>
         </button>
       </div>
+
+      <AlertDialog open={!!disconnectTarget} onOpenChange={() => setDisconnectTarget(null)}>
+        <AlertDialogContent className="rounded-2xl max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Αποσύνδεση</AlertDialogTitle>
+            <AlertDialogDescription>
+              Θέλετε να αποσυνδεθείτε από {disconnectTarget ? OAUTH_CONFIGS[disconnectTarget].name : ''}?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (disconnectTarget) {
+                  disconnect(disconnectTarget);
+                  setDisconnectTarget(null);
+                }
+              }}
+            >
+              Αποσύνδεση
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </section>
   );
 }

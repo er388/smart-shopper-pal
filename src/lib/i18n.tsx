@@ -74,7 +74,7 @@ const translations = {
     other: 'Άλλο',
     itemsCount: 'προϊόντα',
     appTitle: 'Pson.io',
-    version: 'Έκδοση 1.1.1',
+    version: 'Έκδοση 1.2.0',
     added: 'Προστέθηκε',
     removed: 'Αφαιρέθηκε',
     unit: 'Μονάδα μέτρησης',
@@ -193,6 +193,7 @@ const translations = {
     smartUncheck: 'Αυτόματη μετακίνηση κατά το ξε-τσεκάρισμα',
     // Theme modes
     themeMode: 'Θέμα εμφάνισης',
+    themeSystem: 'Σύστημα',
     themeLight: 'Φωτεινό',
     themeDark: 'Σκοτεινό',
     themeBlack: 'AMOLED',
@@ -284,7 +285,7 @@ const translations = {
     other: 'Other',
     itemsCount: 'items',
     appTitle: 'Pson.io',
-    version: 'Version 1.1.1',
+    version: 'Version 1.2.0',
     added: 'Added',
     removed: 'Removed',
     unit: 'Unit',
@@ -403,6 +404,7 @@ const translations = {
     smartUncheck: 'Auto-move on uncheck',
     // Theme modes
     themeMode: 'Appearance',
+    themeSystem: 'System',
     themeLight: 'Light',
     themeDark: 'Dark',
     themeBlack: 'AMOLED',

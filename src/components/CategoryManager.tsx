@@ -15,6 +15,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, ChevronDown } from 'lucide-react';
 
 type DeleteTarget =
   | { kind: 'custom'; category: CustomCategory }
@@ -31,6 +35,46 @@ const CUSTOM_COLORS = [
 
 const EMOJI_OPTIONS = ['🛒', '🏷️', '🧃', '🥫', '🫘', '🧂', '🫒', '🍯', '🧈', '🥜', '🌮', '🍕', '🍰', '🧀', '🫙'];
 
+function SortableCategoryItem({ cat, lang, editingId, editName, editNameEn, countProducts, t, onEditStart, onEditNameChange, onEditNameEnChange, onSave, onCancelEdit, onDelete }: any) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: cat.id });
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
+      <button {...attributes} {...listeners} className="text-muted-foreground/50 touch-none">
+        <GripVertical size={16} />
+      </button>
+      <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${cat.color}`}>
+        {cat.emoji}
+      </span>
+      {editingId === cat.id ? (
+        <div className="flex-1 flex items-center gap-2">
+          <Input value={editName} onChange={e => onEditNameChange(e.target.value)} className="h-8 text-sm" placeholder="Όνομα (EL)" />
+          <Input value={editNameEn} onChange={e => onEditNameEnChange(e.target.value)} className="h-8 text-sm w-24" placeholder="EN" />
+          <button onClick={onSave} className="w-7 h-7 rounded-lg flex items-center justify-center text-primary hover:bg-primary/10">
+            <Check size={15} />
+          </button>
+          <button onClick={onCancelEdit} className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary">
+            <X size={15} />
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="flex-1 min-w-0">
+            <span className="text-sm font-medium text-foreground">{lang === 'el' ? cat.name : (cat.nameEn || cat.name)}</span>
+            {cat.nameEn && lang === 'el' && <span className="text-xs text-muted-foreground ml-2">{cat.nameEn}</span>}
+          </div>
+          <span className="text-xs text-muted-foreground">{countProducts(cat.id)} {t('itemsCount')}</span>
+          <button onClick={onEditStart} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors">
+            <Edit2 size={15} />
+          </button>
+          <button onClick={onDelete} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
+            <Trash2 size={15} />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function CategoryManager() {
   const { t, lang } = useI18n();
   const {
@@ -38,6 +82,7 @@ export default function CategoryManager() {
     addCategory,
     updateCategory,
     removeCategory,
+    setAllCategories,
     defaultCategoryOverrides,
     updateDefaultCategory,
     hideDefaultCategory,
@@ -56,6 +101,11 @@ export default function CategoryManager() {
   const [editDefaultNameEn, setEditDefaultNameEn] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  const sensors = useSensors(
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
 
   const visibleDefaultCategories = useMemo(
     () => DEFAULT_CATEGORIES.filter(c => !hiddenDefaultCategories.includes(c)),
@@ -136,123 +186,119 @@ export default function CategoryManager() {
 
   return (
     <section className="mb-6">
-      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-        <Tag size={14} /> Κατηγορίες Προϊόντων
-      </h2>
+      <button onClick={() => setIsOpen(v => !v)} className="w-full flex items-center gap-1.5 mb-3">
+        <Tag size={14} className="text-muted-foreground" />
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-1 text-left">Κατηγορίες Προϊόντων</h2>
+        <ChevronDown size={14} className={`text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
 
-      <div className="space-y-1.5 mb-3">
-        {visibleDefaultCategories.map(c => {
-          const override = defaultCategoryOverrides[c];
-          return (
-            <div key={c} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
-              <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${CATEGORY_COLORS[c]}`}>
-                {CATEGORY_EMOJI[c]}
-              </span>
-              {editingDefaultKey === c ? (
-                <div className="flex-1 flex items-center gap-2">
-                  <Input value={editDefaultName} onChange={e => setEditDefaultName(e.target.value)} className="h-8 text-sm" placeholder="Όνομα (EL)" />
-                  <Input value={editDefaultNameEn} onChange={e => setEditDefaultNameEn(e.target.value)} className="h-8 text-sm w-24" placeholder="EN" />
-                  <button onClick={() => saveDefaultEdit(c)} className="w-7 h-7 rounded-lg flex items-center justify-center text-primary hover:bg-primary/10">
-                    <Check size={15} />
-                  </button>
-                  <button onClick={() => setEditingDefaultKey(null)} className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary">
-                    <X size={15} />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-sm font-medium text-foreground">{getDefaultDisplayName(c)}</span>
-                    {lang === 'el' && override?.nameEn && <span className="text-xs text-muted-foreground ml-2">{override.nameEn}</span>}
-                  </div>
-                  <span className="text-xs text-muted-foreground">{countProducts(c)} {t('itemsCount')}</span>
-                  <button onClick={() => startDefaultEdit(c)} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors">
-                    <Edit2 size={15} />
-                  </button>
-                  <button
-                    onClick={() => setDeleteTarget({ kind: 'default', key: c, name: getDefaultDisplayName(c) })}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {customCategories.length > 0 && (
-        <div className="space-y-1.5 mb-3">
-          {customCategories.map(cat => (
-            <div key={cat.id} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
-              <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${cat.color}`}>
-                {cat.emoji}
-              </span>
-              {editingId === cat.id ? (
-                <div className="flex-1 flex items-center gap-2">
-                  <Input value={editName} onChange={e => setEditName(e.target.value)} className="h-8 text-sm" placeholder="Όνομα (EL)" />
-                  <Input value={editNameEn} onChange={e => setEditNameEn(e.target.value)} className="h-8 text-sm w-24" placeholder="EN" />
-                  <button onClick={() => saveEdit(cat.id)} className="w-7 h-7 rounded-lg flex items-center justify-center text-primary hover:bg-primary/10">
-                    <Check size={15} />
-                  </button>
-                  <button onClick={() => setEditingId(null)} className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary">
-                    <X size={15} />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-sm font-medium text-foreground">{lang === 'el' ? cat.name : (cat.nameEn || cat.name)}</span>
-                    {cat.nameEn && lang === 'el' && (
-                      <span className="text-xs text-muted-foreground ml-2">{cat.nameEn}</span>
+      {isOpen && (
+      <>
+            <div className="space-y-1.5 mb-3">
+              {visibleDefaultCategories.map(c => {
+                const override = defaultCategoryOverrides[c];
+                return (
+                  <div key={c} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${CATEGORY_COLORS[c]}`}>
+                      {CATEGORY_EMOJI[c]}
+                    </span>
+                    {editingDefaultKey === c ? (
+                      <div className="flex-1 flex items-center gap-2">
+                        <Input value={editDefaultName} onChange={e => setEditDefaultName(e.target.value)} className="h-8 text-sm" placeholder="Όνομα (EL)" />
+                        <Input value={editDefaultNameEn} onChange={e => setEditDefaultNameEn(e.target.value)} className="h-8 text-sm w-24" placeholder="EN" />
+                        <button onClick={() => saveDefaultEdit(c)} className="w-7 h-7 rounded-lg flex items-center justify-center text-primary hover:bg-primary/10">
+                          <Check size={15} />
+                        </button>
+                        <button onClick={() => setEditingDefaultKey(null)} className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary">
+                          <X size={15} />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm font-medium text-foreground">{getDefaultDisplayName(c)}</span>
+                          {lang === 'el' && override?.nameEn && <span className="text-xs text-muted-foreground ml-2">{override.nameEn}</span>}
+                        </div>
+                        <span className="text-xs text-muted-foreground">{countProducts(c)} {t('itemsCount')}</span>
+                        <button onClick={() => startDefaultEdit(c)} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors">
+                          <Edit2 size={15} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteTarget({ kind: 'default', key: c, name: getDefaultDisplayName(c) })}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </>
                     )}
                   </div>
-                  <span className="text-xs text-muted-foreground">{countProducts(cat.id)} {t('itemsCount')}</span>
-                  <button onClick={() => startEdit(cat)} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors">
-                    <Edit2 size={15} />
-                  </button>
-                  <button
-                    onClick={() => setDeleteTarget({ kind: 'custom', category: cat })}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </>
-              )}
+                );
+              })}
             </div>
-          ))}
-        </div>
-      )}
 
-      {showAddForm ? (
-        <div className="p-3 rounded-xl bg-card border border-border space-y-3">
-          <div className="flex gap-2 flex-wrap">
-            {EMOJI_OPTIONS.map(e => (
-              <button
-                key={e}
-                onClick={() => setNewEmoji(e)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors ${newEmoji === e ? 'bg-primary/20 ring-2 ring-primary' : 'bg-secondary'}`}
-              >
-                {e}
-              </button>
-            ))}
-          </div>
-          <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Όνομα κατηγορίας (EL)" className="text-sm h-9" />
-          <Input value={newNameEn} onChange={e => setNewNameEn(e.target.value)} placeholder="Category name (EN)" className="text-sm h-9" />
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1 rounded-xl" onClick={() => setShowAddForm(false)}>
-              {t('cancel')}
-            </Button>
-            <Button size="sm" className="flex-1 rounded-xl" onClick={handleAdd}>
-              {t('save')}
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <Button variant="outline" size="sm" className="w-full rounded-xl" onClick={() => setShowAddForm(true)}>
-          <Plus size={16} className="mr-1.5" /> Προσθήκη κατηγορίας
-        </Button>
+            {customCategories.length > 0 && (
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={({ active, over }) => {
+                if (over && active.id !== over.id) {
+                  const oldIdx = customCategories.findIndex(c => c.id === active.id);
+                  const newIdx = customCategories.findIndex(c => c.id === over.id);
+                  setAllCategories(arrayMove(customCategories, oldIdx, newIdx));
+                }
+              }}>
+                <SortableContext items={customCategories.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-1.5 mb-3">
+                    {customCategories.map(cat => (
+                      <SortableCategoryItem
+                        key={cat.id}
+                        cat={cat}
+                        lang={lang}
+                        editingId={editingId}
+                        editName={editName}
+                        editNameEn={editNameEn}
+                        countProducts={countProducts}
+                        t={t}
+                        onEditStart={() => startEdit(cat)}
+                        onEditNameChange={setEditName}
+                        onEditNameEnChange={setEditNameEn}
+                        onSave={() => saveEdit(cat.id)}
+                        onCancelEdit={() => setEditingId(null)}
+                        onDelete={() => setDeleteTarget({ kind: 'custom', category: cat })}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            )}
+
+            {showAddForm ? (
+              <div className="p-3 rounded-xl bg-card border border-border space-y-3">
+                <div className="flex gap-2 flex-wrap">
+                  {EMOJI_OPTIONS.map(e => (
+                    <button
+                      key={e}
+                      onClick={() => setNewEmoji(e)}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors ${newEmoji === e ? 'bg-primary/20 ring-2 ring-primary' : 'bg-secondary'}`}
+                    >
+                      {e}
+                    </button>
+                  ))}
+                </div>
+                <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Όνομα κατηγορίας (EL)" className="text-sm h-9" />
+                <Input value={newNameEn} onChange={e => setNewNameEn(e.target.value)} placeholder="Category name (EN)" className="text-sm h-9" />
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="flex-1 rounded-xl" onClick={() => setShowAddForm(false)}>
+                    {t('cancel')}
+                  </Button>
+                  <Button size="sm" className="flex-1 rounded-xl" onClick={handleAdd}>
+                    {t('save')}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button variant="outline" size="sm" className="w-full rounded-xl" onClick={() => setShowAddForm(true)}>
+                <Plus size={16} className="mr-1.5" /> Προσθήκη κατηγορίας
+              </Button>
+            )}
+            </>
       )}
 
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>

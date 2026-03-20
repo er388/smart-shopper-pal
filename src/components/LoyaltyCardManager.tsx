@@ -10,6 +10,8 @@ import { LoyaltyCard } from '@/lib/types';
 import BarcodeScanner from './BarcodeScanner';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode';
+import { motion } from 'framer-motion';
+import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 
 type BarcodeFormat = 'EAN13' | 'CODE128' | 'QR' | 'EAN8' | 'UPC';
 
@@ -77,19 +79,23 @@ export default function LoyaltyCardManager() {
 
   // Wake lock for fullscreen card display
   const requestWakeLock = useCallback(async () => {
-    try {
-      if ('wakeLock' in navigator) {
-        const wl = await (navigator as any).wakeLock.request('screen');
-        setWakeLock(wl);
-      }
-    } catch {}
+  try {
+    if ('wakeLock' in navigator) {
+      const wl = await (navigator as any).wakeLock.request('screen');
+      setWakeLock(wl);
+    }
+    await ScreenBrightness.setBrightness({ brightness: 1.0 });
+  } catch {}
   }, []);
 
-  const releaseWakeLock = useCallback(() => {
+  const releaseWakeLock = useCallback(async () => {
     if (wakeLock) {
       wakeLock.release().catch(() => {});
       setWakeLock(null);
     }
+    try {
+      await ScreenBrightness.setBrightness({ brightness: -1 });
+    } catch {}
   }, [wakeLock]);
 
   useEffect(() => {
@@ -217,18 +223,26 @@ export default function LoyaltyCardManager() {
 
       {/* Fullscreen Card Display */}
       {fullscreenCard && (
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
           className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8"
           onClick={() => setFullscreenCard(null)}
+          style={{ filter: 'brightness(1)' }}
         >
-          <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/10 flex items-center justify-center">
+          <button
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/10 flex items-center justify-center"
+            onClick={e => { e.stopPropagation(); setFullscreenCard(null); }}
+          >
             <X size={20} />
           </button>
           <p className="text-xl font-bold text-black mb-2">{fullscreenCard.name}</p>
           <p className="text-sm text-gray-500 mb-6">{fullscreenCard.number}</p>
           <BarcodeDisplay value={fullscreenCard.number} format={fullscreenCard.format as BarcodeFormat} fullscreen />
           <p className="text-xs text-gray-400 mt-8">{t('tapToClose')}</p>
-        </div>
+        </motion.div>
       )}
     </section>
   );
@@ -245,10 +259,19 @@ export function LoyaltyCardQuickButton({ storeId }: { storeId: string | null }) 
   const matchedCard = storeId ? cards.find(c => c.storeId === storeId) : null;
 
   useEffect(() => {
-    if (fullscreenCard && 'wakeLock' in navigator) {
-      (navigator as any).wakeLock.request('screen').then((wl: any) => setWakeLock(wl)).catch(() => {});
+    if (fullscreenCard) {
+      if ('wakeLock' in navigator) {
+        (navigator as any).wakeLock.request('screen').then((wl: any) => setWakeLock(wl)).catch(() => {});
+      }
+      ScreenBrightness.setBrightness({ brightness: 1.0 }).catch(() => {});
+    } else {
+      wakeLock?.release().catch(() => {});
+      ScreenBrightness.setBrightness({ brightness: -1 }).catch(() => {});
     }
-    return () => { wakeLock?.release().catch(() => {}); };
+    return () => {
+      wakeLock?.release().catch(() => {});
+      ScreenBrightness.setBrightness({ brightness: -1 }).catch(() => {});
+    };
   }, [fullscreenCard]);
 
   if (!matchedCard) return null;
@@ -267,18 +290,26 @@ export function LoyaltyCardQuickButton({ storeId }: { storeId: string | null }) 
       </button>
 
       {fullscreenCard && (
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
           className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8"
           onClick={() => setFullscreenCard(null)}
+          style={{ filter: 'brightness(1)' }}
         >
-          <button className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/10 flex items-center justify-center">
+          <button
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/10 flex items-center justify-center"
+            onClick={e => { e.stopPropagation(); setFullscreenCard(null); }}
+          >
             <X size={20} />
           </button>
           <p className="text-xl font-bold text-black mb-2">{fullscreenCard.name}</p>
           <p className="text-sm text-gray-500 mb-6">{fullscreenCard.number}</p>
           <BarcodeDisplay value={fullscreenCard.number} format={fullscreenCard.format as BarcodeFormat} fullscreen />
           <p className="text-xs text-gray-400 mt-8">{t('tapToClose')}</p>
-        </div>
+        </motion.div>
       )}
     </>
   );

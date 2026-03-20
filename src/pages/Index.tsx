@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
-import { Plus, Search, Store, Trash2, Minus, ChevronDown, ChevronUp, CheckCircle2, Share2, Bookmark, BookmarkPlus, Zap, Camera, ScanLine, Wallet, X, ArrowLeftRight } from 'lucide-react';
+import { Plus, Search, Store, Trash2, Minus, ChevronDown, ChevronUp, CheckCircle2, Share2, Bookmark, BookmarkPlus, Zap, Camera, ScanLine, Wallet, X, ArrowLeftRight, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useI18n } from '@/lib/i18n';
@@ -72,6 +72,8 @@ export default function ShoppingListPage() {
   const [altSwapItem, setAltSwapItem] = useState<{ itemId: string; productId: string } | null>(null);
   const [duplicateInfo, setDuplicateInfo] = useState<{ productId: string; pendingStoreId: string | null } | null>(null);
   const [storeCheckOpen, setStoreCheckOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importText, setImportText] = useState('');
 
   // Smart uncheck setting
   const [smartUncheck, setSmartUncheck] = useState(() => {
@@ -143,23 +145,22 @@ export default function ShoppingListPage() {
 
   // Frequent products for quick add
   const frequentProducts = useMemo(() => {
+    const favorites = products.filter(p => p.favorite);
+    
     const countMap = new Map<string, number>();
     completedPurchases.forEach(p => {
       p.items.forEach(i => {
         countMap.set(i.productId, (countMap.get(i.productId) || 0) + i.quantity);
       });
     });
-    if (countMap.size === 0) {
-      return products
-        .filter(p => p.purchaseCount > 0)
-        .sort((a, b) => b.purchaseCount - a.purchaseCount)
-        .slice(0, 10);
-    }
-    return [...countMap.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([pid]) => products.find(p => p.id === pid))
-      .filter(Boolean) as typeof products;
+
+    const frequent = countMap.size === 0
+      ? products.filter(p => p.purchaseCount > 0).sort((a, b) => b.purchaseCount - a.purchaseCount).slice(0, 8)
+      : [...countMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([pid]) => products.find(p => p.id === pid)).filter(Boolean) as typeof products;
+
+    const combined = [...favorites];
+    frequent.forEach(p => { if (!combined.find(f => f.id === p.id)) combined.push(p); });
+    return combined.slice(0, 12);
   }, [completedPurchases, products]);
 
   const existingProductIds = useMemo(() => new Set(items.map(i => i.productId)), [items]);
@@ -404,12 +405,36 @@ export default function ShoppingListPage() {
       text += `\n💰 Σύνολο: ${formatPrice(total)}`;
     }
 
-    if (navigator.share) {
-      try { await navigator.share({ text }); } catch { }
-    } else {
+    try {
+      if (navigator.share) {
+        await navigator.share({ text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        toast({ title: t('copied') });
+      }
+    } catch {
       await navigator.clipboard.writeText(text);
       toast({ title: t('copied') });
     }
+  };
+
+  const handleImportList = () => {
+    const lines = importText.split('\n').map(l => l.trim()).filter(l => l.startsWith('- '));
+    let found = 0;
+    lines.forEach(line => {
+      const match = line.replace(/^- /, '').split(' ')[0];
+      const product = products.find(p =>
+        p.name.toLowerCase().includes(match.toLowerCase()) ||
+        (p.nameEn && p.nameEn.toLowerCase().includes(match.toLowerCase()))
+      );
+      if (product) {
+        addItemWithDuplicateCheck(product.id, 1, activeStoreId);
+        found++;
+      }
+    });
+    setImportDialogOpen(false);
+    setImportText('');
+    toast({ title: `Προστέθηκαν ${found} προϊόντα` });
   };
 
   const handleSaveTemplate = () => {
@@ -630,6 +655,9 @@ export default function ShoppingListPage() {
               <>
                 <button onClick={handleShare} className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-secondary transition-colors" title={t('share')}>
                   <Share2 size={18} className="text-muted-foreground" />
+                </button>
+                <button onClick={() => setImportDialogOpen(true)} className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-secondary transition-colors" title="Import λίστας">
+                  <Download size={18} className="text-muted-foreground" />
                 </button>
                 <button onClick={() => setShowSaveTemplate(true)} className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-secondary transition-colors" title={t('saveAsTemplate')}>
                   <BookmarkPlus size={18} className="text-muted-foreground" />
@@ -1074,6 +1102,25 @@ export default function ShoppingListPage() {
             <Button className="w-full rounded-xl" onClick={() => { setStoreCheckOpen(false); doCompletePurchase(); }}>
               {t('continueWithout')}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import List Dialog */}
+      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+        <DialogContent className="max-w-xs mx-auto rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base">Import Λίστας</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">Επικόλλησε τη λίστα που έλαβες:</p>
+            <textarea
+              value={importText}
+              onChange={e => setImportText(e.target.value)}
+              className="w-full h-40 text-xs bg-background border border-border rounded-xl p-3 outline-none resize-none text-foreground"
+              placeholder="🛒 Λίστα Ψωνιών..."
+            />
+            <Button onClick={handleImportList} className="w-full rounded-xl">{t('confirm')}</Button>
           </div>
         </DialogContent>
       </Dialog>

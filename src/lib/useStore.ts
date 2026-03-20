@@ -236,6 +236,10 @@ export function useTemplates() {
     return t;
   }, [setTemplates]);
 
+  const updateTemplate = useCallback((id: string, name: string) => {
+    setTemplates(prev => prev.map(t => t.id === id ? { ...t, name } : t));
+  }, [setTemplates]);
+
   const removeTemplate = useCallback((id: string) => {
     setTemplates(prev => prev.filter(t => t.id !== id));
   }, [setTemplates]);
@@ -244,7 +248,7 @@ export function useTemplates() {
     setTemplates(ts);
   }, [setTemplates]);
 
-  return { templates, addTemplate, removeTemplate, setAllTemplates };
+  return { templates, addTemplate, removeTemplate, updateTemplate, setAllTemplates };
 }
 
 export function useCustomCategories() {
@@ -354,7 +358,7 @@ export function useLoyaltyCards() {
   return { cards, addCard, removeCard, setAllCards };
 }
 
-export type ThemeMode = 'light' | 'dark' | 'black' | 'green' | 'blue' | 'red';
+export type ThemeMode = 'system' | 'light' | 'dark' | 'black' | 'green' | 'blue' | 'red';
 
 export function useThemeMode() {
   const [theme, setTheme] = useLocalStorage<ThemeMode>('Pson-theme', 'light');
@@ -362,6 +366,9 @@ export function useThemeMode() {
     const cl = document.documentElement.classList;
     cl.remove('dark', 'theme-black', 'theme-green', 'theme-blue', 'theme-red');
     if (theme === 'dark') cl.add('dark');
+    else if (theme === 'system') {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) cl.add('dark');
+    }
     else if (theme === 'black') { cl.add('dark'); cl.add('theme-black'); }
     else if (theme === 'green') { cl.add('dark'); cl.add('theme-green'); }
     else if (theme === 'blue') { cl.add('dark'); cl.add('theme-blue'); }

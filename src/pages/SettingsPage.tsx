@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Globe, Palette, Store, Plus, Trash2, Bookmark, ArrowUpFromLine, Home, Clock } from 'lucide-react';
+import { Globe, Palette, Store, Plus, Trash2, Bookmark, ArrowUpFromLine, Home, Clock, Edit2, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -12,8 +12,13 @@ import CloudBackup from '@/components/CloudBackup';
 import LoyaltyCardManager from '@/components/LoyaltyCardManager';
 import { toast } from '@/hooks/use-toast';
 import { useCompletedPurchases } from '@/lib/useStore';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical } from 'lucide-react';
 
 const THEME_OPTIONS: { value: ThemeMode; emoji: string }[] = [
+  { value: 'system', emoji: '⚙️' },
   { value: 'light', emoji: '☀️' },
   { value: 'dark', emoji: '🌙' },
   { value: 'black', emoji: '⬛' },
@@ -31,12 +36,21 @@ const STARTUP_PAGES = [
   { value: 'settings', path: '/settings' },
 ] as const;
 
+const [storesOpen, setStoresOpen] = useState(true);
+const [templatesOpen, setTemplatesOpen] = useState(true);
+const sensors = useSensors(
+  useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+);
+
 export default function SettingsPage() {
   const { t, lang, setLang } = useI18n();
-  const { stores, addStore, removeStore } = useStores();
+  const { stores, addStore, removeStore, setAllStores } = useStores();
   const [theme, setTheme] = useThemeMode();
   const [newStore, setNewStore] = useState('');
-  const { templates, removeTemplate } = useTemplates();
+  const { templates, removeTemplate, updateTemplate, setAllTemplates } = useTemplates();
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  const [editingTemplateName, setEditingTemplateName] = useState('');
   const { historyLimit, setHistoryLimit } = useCompletedPurchases();
   const [smartUncheck, setSmartUncheck] = useState(() => {
     try { return localStorage.getItem('Pson-smart-uncheck') !== 'false'; } catch { return true; }
@@ -178,73 +192,87 @@ export default function SettingsPage() {
 
       {/* Stores */}
       <section className="mb-6">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-          <Store size={14} /> {t('stores')}
-        </h2>
-        <div className="space-y-1.5 mb-3">
-          {stores.map(s => (
-            <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
-              <Store size={16} className="text-muted-foreground" />
-              <span className="flex-1 text-sm font-medium text-foreground">{s.name}</span>
-              <button
-                onClick={() => removeStore(s.id)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-              >
-                <Trash2 size={15} />
-              </button>
+        <button
+          onClick={() => setStoresOpen(v => !v)}
+          className="w-full flex items-center gap-1.5 mb-3"
+        >
+          <Store size={14} className="text-muted-foreground" />
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-1 text-left">{t('stores')}</h2>
+          <ChevronDown size={14} className={`text-muted-foreground transition-transform ${storesOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {storesOpen && (
+          <>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={({ active, over }) => {
+              if (over && active.id !== over.id) {
+                const oldIdx = stores.findIndex(s => s.id === active.id);
+                const newIdx = stores.findIndex(s => s.id === over.id);
+                setAllStores(arrayMove(stores, oldIdx, newIdx));
+              }
+            }}>
+              <SortableContext items={stores.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-1.5 mb-3">
+                  {stores.map(s => (
+                    <SortableStoreItem key={s.id} store={s} onRemove={() => removeStore(s.id)} />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+            <div className="flex gap-2">
+              <Input value={newStore} onChange={e => setNewStore(e.target.value)} placeholder={t('storeName')} className="rounded-xl text-sm h-10" onKeyDown={e => e.key === 'Enter' && handleAddStore()} />
+              <Button onClick={handleAddStore} size="sm" className="rounded-xl px-4 h-10"><Plus size={16} /></Button>
             </div>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <Input
-            value={newStore}
-            onChange={e => setNewStore(e.target.value)}
-            placeholder={t('storeName')}
-            className="rounded-xl text-sm h-10"
-            onKeyDown={e => e.key === 'Enter' && handleAddStore()}
-          />
-          <Button onClick={handleAddStore} size="sm" className="rounded-xl px-4 h-10">
-            <Plus size={16} />
-          </Button>
-        </div>
+          </>
+        )}
       </section>
-
-      {/* Loyalty Cards */}
-      <LoyaltyCardManager />
 
       {/* Categories */}
       <CategoryManager />
 
       {/* Templates */}
       <section className="mb-6">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-          <Bookmark size={14} /> {t('templates')}
-        </h2>
-        {templates.length === 0 ? (
-          <p className="text-sm text-muted-foreground p-3">{t('noTemplates')}</p>
-        ) : (
-          <div className="space-y-1.5">
-            {templates.map(tpl => (
-              <div key={tpl.id} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
-                <Bookmark size={16} className="text-muted-foreground" />
-                <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium text-foreground">{tpl.name}</span>
-                  <p className="text-xs text-muted-foreground">{tpl.items.length} {t('itemsCount')}</p>
+        <button onClick={() => setTemplatesOpen(v => !v)} className="w-full flex items-center gap-1.5 mb-3">
+          <Bookmark size={14} className="text-muted-foreground" />
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-1 text-left">{t('templates')}</h2>
+          <ChevronDown size={14} className={`text-muted-foreground transition-transform ${templatesOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {templatesOpen && (
+          templates.length === 0 ? (
+            <p className="text-sm text-muted-foreground p-3">{t('noTemplates')}</p>
+          ) : (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={({ active, over }) => {
+              if (over && active.id !== over.id) {
+                const oldIdx = templates.findIndex(t => t.id === active.id);
+                const newIdx = templates.findIndex(t => t.id === over.id);
+                setAllTemplates(arrayMove(templates, oldIdx, newIdx));
+              }
+            }}>
+              <SortableContext items={templates.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-1.5">
+                  {templates.map(tpl => (
+                    <SortableTemplateItem
+                      key={tpl.id}
+                      template={tpl}
+                      isEditing={editingTemplateId === tpl.id}
+                      editName={editingTemplateName}
+                      onEditStart={() => { setEditingTemplateId(tpl.id); setEditingTemplateName(tpl.name); }}
+                      onEditChange={setEditingTemplateName}
+                      onEditDone={() => { updateTemplate(tpl.id, editingTemplateName.trim() || tpl.name); setEditingTemplateId(null); }}
+                      onRemove={() => { removeTemplate(tpl.id); toast({ title: t('templateDeleted') }); }}
+                      itemsLabel={`${tpl.items.length} ${t('itemsCount')}`}
+                    />
+                  ))}
                 </div>
-                <button
-                  onClick={() => { removeTemplate(tpl.id); toast({ title: t('templateDeleted') }); }}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                >
-                  <Trash2 size={15} />
-                </button>
-              </div>
-            ))}
-          </div>
+              </SortableContext>
+            </DndContext>
+          )
         )}
       </section>
 
       {/* Cloud Backup */}
       <CloudBackup />
+
+      {/* Loyalty Cards */}
+      <LoyaltyCardManager />
 
       {/* Data & Security */}
       <DataManager onDataChanged={() => window.location.reload()} />
@@ -257,6 +285,48 @@ export default function SettingsPage() {
         <p className="text-lg font-bold text-foreground">{t('appTitle')}</p>
         <p className="text-xs text-muted-foreground">{t('version')}</p>
       </section>
+    </div>
+  );
+}
+
+function SortableStoreItem({ store, onRemove }: { store: { id: string; name: string }; onRemove: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: store.id });
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
+      <button {...attributes} {...listeners} className="text-muted-foreground/50 touch-none">
+        <GripVertical size={16} />
+      </button>
+      <Store size={16} className="text-muted-foreground" />
+      <span className="flex-1 text-sm font-medium text-foreground">{store.name}</span>
+      <button onClick={onRemove} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
+        <Trash2 size={15} />
+      </button>
+    </div>
+  );
+}
+
+function SortableTemplateItem({ template, isEditing, editName, onEditStart, onEditChange, onEditDone, onRemove, itemsLabel }: any) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: template.id });
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
+      <button {...attributes} {...listeners} className="text-muted-foreground/50 touch-none">
+        <GripVertical size={16} />
+      </button>
+      <Bookmark size={16} className="text-muted-foreground" />
+      {isEditing ? (
+        <input className="flex-1 text-sm font-medium bg-background border border-primary rounded-lg px-2 py-1 outline-none text-foreground" value={editName} onChange={e => onEditChange(e.target.value)} onBlur={onEditDone} onKeyDown={e => e.key === 'Enter' && onEditDone()} autoFocus />
+      ) : (
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-medium text-foreground">{template.name}</span>
+          <p className="text-xs text-muted-foreground">{itemsLabel}</p>
+        </div>
+      )}
+      <button onClick={onEditStart} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors">
+        <Edit2 size={15} />
+      </button>
+      <button onClick={onRemove} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
+        <Trash2 size={15} />
+      </button>
     </div>
   );
 }

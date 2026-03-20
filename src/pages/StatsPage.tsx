@@ -67,6 +67,18 @@ export default function StatsPage() {
       .map(([pid, count]) => ({ name: getProductName(pid), count, pid }));
   }, [filteredHistory, products]);
 
+  const productSpending = useMemo(() => {
+  const map = new Map<string, number>();
+  filteredHistory.forEach(r => {
+    const amount = r.price * (1 - r.discount / 100);
+    map.set(r.productId, (map.get(r.productId) || 0) + amount);
+  });
+  return Array.from(map.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([pid, amount]) => ({ name: getProductName(pid), amount: Math.round(amount * 100) / 100, pid }));
+}, [filteredHistory, products]);
+
   const categorySpending = useMemo(() => {
     const map = new Map<string, number>();
     filteredHistory.forEach(r => {
@@ -259,6 +271,21 @@ export default function StatsPage() {
                     </div>
                   );
                 })}
+              </div>
+            </section>
+          )}
+
+          {productSpending.length > 0 && (
+            <section className="mb-6">
+              <h2 className="text-sm font-semibold text-foreground mb-3">💰 Δαπάνες ανά προϊόν</h2>
+              <div className="space-y-1.5">
+                {productSpending.map((p, i) => (
+                  <div key={p.pid} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
+                    <span className="w-6 text-center text-xs font-bold text-muted-foreground">#{i + 1}</span>
+                    <span className="flex-1 text-sm font-medium text-foreground truncate">{p.name}</span>
+                    <span className="text-xs font-medium text-primary">{formatPrice(p.amount)}</span>
+                  </div>
+                ))}
               </div>
             </section>
           )}
