@@ -11,7 +11,6 @@ import BarcodeScanner from './BarcodeScanner';
 import JsBarcode from 'jsbarcode';
 import QRCode from 'qrcode';
 import { motion } from 'framer-motion';
-import { ScreenBrightness } from '@capacitor-community/screen-brightness';
 
 type BarcodeFormat = 'EAN13' | 'CODE128' | 'QR' | 'EAN8' | 'UPC';
 
@@ -84,7 +83,6 @@ export default function LoyaltyCardManager() {
       const wl = await (navigator as any).wakeLock.request('screen');
       setWakeLock(wl);
     }
-    await ScreenBrightness.setBrightness({ brightness: 1.0 });
   } catch {}
   }, []);
 
@@ -94,7 +92,6 @@ export default function LoyaltyCardManager() {
       setWakeLock(null);
     }
     try {
-      await ScreenBrightness.setBrightness({ brightness: -1 });
     } catch {}
   }, [wakeLock]);
 
@@ -263,14 +260,11 @@ export function LoyaltyCardQuickButton({ storeId }: { storeId: string | null }) 
       if ('wakeLock' in navigator) {
         (navigator as any).wakeLock.request('screen').then((wl: any) => setWakeLock(wl)).catch(() => {});
       }
-      ScreenBrightness.setBrightness({ brightness: 1.0 }).catch(() => {});
     } else {
       wakeLock?.release().catch(() => {});
-      ScreenBrightness.setBrightness({ brightness: -1 }).catch(() => {});
     }
     return () => {
       wakeLock?.release().catch(() => {});
-      ScreenBrightness.setBrightness({ brightness: -1 }).catch(() => {});
     };
   }, [fullscreenCard]);
 
