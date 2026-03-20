@@ -36,13 +36,6 @@ const STARTUP_PAGES = [
   { value: 'settings', path: '/settings' },
 ] as const;
 
-const [storesOpen, setStoresOpen] = useState(true);
-const [templatesOpen, setTemplatesOpen] = useState(true);
-const sensors = useSensors(
-  useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
-  useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-);
-
 export default function SettingsPage() {
   const { t, lang, setLang } = useI18n();
   const { stores, addStore, removeStore, setAllStores } = useStores();
@@ -58,6 +51,13 @@ export default function SettingsPage() {
   const [startupPage, setStartupPage] = useState(() => {
     try { return localStorage.getItem('Pson-startup-page') || 'last'; } catch { return 'last'; }
   });
+
+  const [storesOpen, setStoresOpen] = useState(true);
+  const [templatesOpen, setTemplatesOpen] = useState(true);
+  const sensors = useSensors(
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
 
   const handleAddStore = () => {
     if (newStore.trim()) {
